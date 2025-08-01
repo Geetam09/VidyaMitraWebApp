@@ -16,5 +16,6 @@ public class TeacherEntity {
 
     private String name;
     private String email;
-    // other fields...
+    private String firstname;
+    private String lastname;
 }
