@@ -21,6 +21,8 @@ public class StudentEntity {
 
     private String parentName;
     private String parentContact;
+    @Column(unique = true)
+    private String parentEmail;
     private String parentPreferredLanguage; // e.g., "en", "mr", "hi"
 
     @ManyToOne
