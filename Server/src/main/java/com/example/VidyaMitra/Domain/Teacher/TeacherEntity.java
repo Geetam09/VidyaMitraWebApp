@@ -41,4 +41,5 @@ public class TeacherEntity {
 
     @OneToMany(mappedBy = "uploader")
     private List<ResourceEntity> uploadedResources;
+
 }
