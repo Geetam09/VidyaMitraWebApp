@@ -18,7 +18,7 @@ public class PostLikeMapper {
         PostLikeOutDto dto = new PostLikeOutDto();
         dto.setId(entity.getId());
         dto.setPostId(entity.getPost().getId());
-        dto.setTeacherId(entity.getUser().getId());
+        dto.setTeacherId(entity.getTeacher().getId());
         return dto;
     }
 
@@ -31,7 +31,7 @@ public class PostLikeMapper {
             return null;
         }
         PostLikeEntity entity = new PostLikeEntity();
-        entity.setUser(user);
+        entity.setTeacher(user);
         entity.setPost(post);
         return entity;
     }

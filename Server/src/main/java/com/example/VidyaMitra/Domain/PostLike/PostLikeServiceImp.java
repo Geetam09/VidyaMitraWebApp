@@ -1,6 +1,7 @@
 package com.example.VidyaMitra.Domain.PostLike;
 
 import com.example.VidyaMitra.Domain.CommunityPost.CommunityPostEntity;
+import com.example.VidyaMitra.Domain.CommunityPost.CommunityPostRepository;
 import com.example.VidyaMitra.Domain.PostLike.DTO.PostLikeInDto;
 import com.example.VidyaMitra.Domain.PostLike.DTO.PostLikeOutDto;
 import com.example.VidyaMitra.Domain.Teacher.TeacherEntity;
@@ -19,7 +20,7 @@ public class PostLikeServiceImp implements PostLikeService {
     private TeacherRepository teacherRepository;
 
     @Autowired
-    private  CommunityPostRepository communityPostRepository;
+    private CommunityPostRepository communityPostRepository;
 
 
 
