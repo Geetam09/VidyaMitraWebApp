@@ -34,4 +34,9 @@ public class StudentEntity {
 
     @OneToMany(mappedBy = "student")
     private List<AttendanceRecordEntity> attendanceRecords;
+
+    // ✅ Image field for storing in DB
+    @Lob
+    @Column(name = "photo", columnDefinition = "LONGBLOB")
+    private byte[] photo;
 }

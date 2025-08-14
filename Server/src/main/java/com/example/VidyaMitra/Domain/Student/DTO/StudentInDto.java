@@ -14,5 +14,5 @@ public class StudentInDto {
     private String parentContact;
     private String parentEmail;
     private String parentPreferredLanguage;
-    private Long schoolClassId;
+    private Long schoolClassId;private String photo;
 }

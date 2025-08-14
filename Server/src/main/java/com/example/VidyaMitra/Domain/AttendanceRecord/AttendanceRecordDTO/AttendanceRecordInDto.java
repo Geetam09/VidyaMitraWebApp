@@ -1,6 +1,6 @@
 package com.example.VidyaMitra.Domain.AttendanceRecord.AttendanceRecordDTO;
 
-import com.example.VidyaMitra.Domain.Assignment.AttendanceStatus;
+import com.example.VidyaMitra.Domain.AttendanceRecord.AttendanceStatus;
 import lombok.*;
 
 import java.time.LocalDate;

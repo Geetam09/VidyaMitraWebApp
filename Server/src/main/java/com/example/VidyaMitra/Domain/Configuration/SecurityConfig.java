@@ -40,6 +40,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/classes/**").hasRole("TEACHER")
                         .requestMatchers("/api/students/**").hasRole("TEACHER")
+                        .requestMatchers("/api/resources/**").hasRole("TEACHER")
+                        .requestMatchers("/api/postLike/**").hasRole("TEACHER")
+                        .requestMatchers("/api/comments/**").hasRole("TEACHER")
+                        .requestMatchers("/api/community-posts/**").hasRole("TEACHER")
+                        .requestMatchers("/api/attendance/**").hasRole("TEACHER")
+                        .requestMatchers("/api/submissions/**").hasRole("TEACHER")
+                        .requestMatchers("/api/assignments/**").hasRole("TEACHER")
+                        .requestMatchers("/api/teachers/**").hasRole("TEACHER")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

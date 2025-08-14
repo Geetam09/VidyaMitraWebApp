@@ -34,6 +34,10 @@ public class TeacherEntity {
 
     private String subjectTaught;
 
+    @Lob
+    @Column(name = "photo", columnDefinition = "LONGBLOB")
+    private byte[] photo;
+
     // Relationships
     @OneToMany(mappedBy = "teacher")
     private List<SchoolClassEntity> classes;
@@ -44,5 +48,7 @@ public class TeacherEntity {
 
     @OneToMany(mappedBy = "uploader")
     private List<ResourceEntity> uploadedResources;
+
+
 
 }
