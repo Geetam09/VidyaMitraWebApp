@@ -3,11 +3,14 @@ package com.example.VidyaMitra.Domain.PostLike;
 import com.example.VidyaMitra.Domain.CommunityPost.CommunityPostEntity;
 import com.example.VidyaMitra.Domain.Teacher.TeacherEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
 @Table(name = "post_likes")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PostLikeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

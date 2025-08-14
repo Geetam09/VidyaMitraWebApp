@@ -1,10 +1,13 @@
 package com.example.VidyaMitra.Domain.AssignmentSubmission.DTO;
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AssignmentSubmissionInDto {
     private Long assignmentId;
     private Long studentId;

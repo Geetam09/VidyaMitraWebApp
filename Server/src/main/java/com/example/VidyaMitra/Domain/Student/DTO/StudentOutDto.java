@@ -1,8 +1,11 @@
 package com.example.VidyaMitra.Domain.Student.DTO;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class StudentOutDto {
     private Long id;
     private String firstName;

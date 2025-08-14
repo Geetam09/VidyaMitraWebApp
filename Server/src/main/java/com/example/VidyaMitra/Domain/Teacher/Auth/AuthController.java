@@ -1,10 +1,10 @@
-package com.example.VidyaMitra.Domain.Teacher;
+package com.example.VidyaMitra.Domain.Teacher.Auth;
 
 import com.example.VidyaMitra.Domain.Teacher.DTO.LoginRequestDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.LoginResponseDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherInDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherOutDto;
-import org.springframework.http.HttpStatus;
+import com.example.VidyaMitra.Domain.Teacher.TeacherService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +19,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<TeacherOutDto> registerTeacher(@RequestBody TeacherInDto teacherDto) {
-        TeacherOutDto registeredTeacher = teacherService.registerTeacher(teacherDto);
-        return new ResponseEntity<>(registeredTeacher, HttpStatus.CREATED);
+    public ResponseEntity<TeacherOutDto> register(@RequestBody TeacherInDto teacherInDto) {
+        return ResponseEntity.ok(teacherService.registerTeacher(teacherInDto));
     }
 
     @PostMapping("/login")

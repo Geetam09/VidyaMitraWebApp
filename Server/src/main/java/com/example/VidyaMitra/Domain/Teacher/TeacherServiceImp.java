@@ -3,68 +3,84 @@ package com.example.VidyaMitra.Domain.Teacher;
 import com.example.VidyaMitra.Domain.Teacher.DTO.LoginRequestDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherInDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherOutDto;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.util.Date;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class TeacherServiceImp implements TeacherService {
-    @Autowired
-    private  TeacherRepository teacherRepository;
-/// //
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final TeacherRepository teacherRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Value("${app.jwt.secret}") // Define this in application.properties
+    @Value("${app.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwt.expiration-ms}") // Define this in application.properties
+    @Value("${app.jwt.expiration-ms}")
     private int jwtExpirationMs;
 
-    public String authenticateAndGetToken(LoginRequestDto loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-        );
+    public TeacherServiceImp(
+            TeacherRepository teacherRepository,
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager
+    ) {
+        this.teacherRepository = teacherRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+    }
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return generateToken(userDetails.getUsername());
+    @Override
+    public String authenticateAndGetToken(LoginRequestDto loginRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
+
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            return generateToken(userDetails.getUsername());
+
+        } catch (Exception e) {
+            throw new BadCredentialsException("Invalid email or password");
+        }
     }
 
     private String generateToken(String username) {
+        TeacherEntity teacher = teacherRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+
         return Jwts.builder()
                 .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .claim("role", "ROLE_TEACHER") // 👈 include role in token
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
-/// //
 
     @Override
     public TeacherOutDto registerTeacher(TeacherInDto teacherDto) {
-        if (teacherRepository.findByEmail(teacherDto.getEmail()).isPresent()) {
-            throw new IllegalStateException("Email already in use.");
-        }
+        teacherRepository.findByEmail(teacherDto.getEmail())
+                .ifPresent(t -> { throw new IllegalStateException("Email already in use."); });
 
         TeacherEntity teacherEntity = TeacherMapper.toEntity(teacherDto);
-
-        // Hash the password before saving
         teacherEntity.setPassword(passwordEncoder.encode(teacherDto.getPassword()));
 
         TeacherEntity savedTeacher = teacherRepository.save(teacherEntity);
@@ -80,7 +96,8 @@ public class TeacherServiceImp implements TeacherService {
 
     @Override
     public List<TeacherOutDto> getAllTeachers() {
-        return teacherRepository.findAll().stream()
+        return teacherRepository.findAll()
+                .stream()
                 .map(TeacherMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -90,8 +107,6 @@ public class TeacherServiceImp implements TeacherService {
         if (!teacherRepository.existsById(id)) {
             throw new RuntimeException("Teacher not found with id: " + id);
         }
-        // Warning: Deleting a teacher will have cascading effects.
-        // You need a clear strategy for what happens to their classes, posts, etc.
         teacherRepository.deleteById(id);
     }
 }

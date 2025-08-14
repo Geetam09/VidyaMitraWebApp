@@ -1,10 +1,13 @@
 package com.example.VidyaMitra.Domain.CommunityPost.CommunityPostDTO;
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CommunityPostOutDto {
     private Long id;
     private Long authorId;

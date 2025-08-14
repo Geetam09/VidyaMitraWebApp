@@ -4,13 +4,16 @@ import com.example.VidyaMitra.Domain.AttendanceRecord.AttendanceRecordEntity;
 import com.example.VidyaMitra.Domain.Student.StudentEntity;
 import com.example.VidyaMitra.Domain.Teacher.TeacherEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Table(name = "school_classes")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class SchoolClassEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -2,13 +2,16 @@ package com.example.VidyaMitra.Domain.Resource;
 
 import com.example.VidyaMitra.Domain.Teacher.TeacherEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "resources")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResourceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
