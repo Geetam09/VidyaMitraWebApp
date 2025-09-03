@@ -152,4 +152,11 @@ public class TeacherServiceImp implements TeacherService {
             throw new RuntimeException("Error reading photo", e);
         }
     }
+
+    @Override
+    public Long getTeacherIdByEmail(String email) {
+        return teacherRepository.findByEmail(email)
+                .map(TeacherEntity::getId)
+                .orElseThrow(() -> new RuntimeException("Teacher not found with email: " + email));
+    }
 }

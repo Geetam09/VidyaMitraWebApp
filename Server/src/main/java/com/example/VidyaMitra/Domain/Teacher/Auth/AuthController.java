@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
     private final TeacherService teacherService;
@@ -26,6 +27,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequest) {
         String token = teacherService.authenticateAndGetToken(loginRequest);
-        return ResponseEntity.ok(new LoginResponseDto(token));
+        Long teacherId = teacherService.getTeacherIdByEmail(loginRequest.getEmail());
+        return ResponseEntity.ok(new LoginResponseDto(token,teacherId));
     }
 }

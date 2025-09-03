@@ -16,5 +16,6 @@ public interface TeacherService {
     void deleteTeacher(Long id);
     void uploadTeacherPhoto(Long id, MultipartFile file);
     ResponseEntity<byte[]> getTeacherPhoto(Long id);
+    Long getTeacherIdByEmail(String email);
 
 }
