@@ -8,4 +8,5 @@ import lombok.*;
 @NoArgsConstructor // A useful Lombok annotation for constructors
 public class LoginResponseDto {
     private String token;
+    private Long teacherId;
 }
