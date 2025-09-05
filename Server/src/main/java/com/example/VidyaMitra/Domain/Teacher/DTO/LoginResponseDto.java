@@ -1,12 +1,18 @@
 package com.example.VidyaMitra.Domain.Teacher.DTO;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
-@NoArgsConstructor // A useful Lombok annotation for constructors
+@NoArgsConstructor
 public class LoginResponseDto {
     private String token;
     private Long teacherId;
+
+    // Extra constructor for token-only case
+    public LoginResponseDto(String token) {
+        this.token = token;
+    }
 }

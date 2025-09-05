@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class ResourceServiceImp implements ResourceService {
 
 
-    private final Path rootLocation = Paths.get("uploads/resources");
+    private Path rootLocation = Paths.get("uploads/resources");
 
     @Autowired
     private ResourceRepository resourceRepository;
