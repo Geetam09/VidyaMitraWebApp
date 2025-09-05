@@ -8,6 +8,7 @@ public class AssignmentMapper {
 
     public static AssignmentEntity toEntity(AssignmentInDto dto, SchoolClassEntity schoolClass) {
         AssignmentEntity entity = new AssignmentEntity();
+     //   entity.setTitle(dto.getTitle());
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
         entity.setDueDate(dto.getDueDate());

@@ -94,4 +94,13 @@ public class TeacherServiceImp implements TeacherService {
         // You need a clear strategy for what happens to their classes, posts, etc.
         teacherRepository.deleteById(id);
     }
+
+    @Override
+    public Long getTeacherIdByEmail(String email) {
+        return teacherRepository.findByEmail(email)
+                .map(TeacherEntity::getId)
+                .orElseThrow(() -> new RuntimeException("Teacher not found with email"+ email));
+    }
+
+
 }

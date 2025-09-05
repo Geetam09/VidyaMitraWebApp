@@ -15,7 +15,7 @@ public class PostLikeEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private TeacherEntity user;
+    private TeacherEntity teacher;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
