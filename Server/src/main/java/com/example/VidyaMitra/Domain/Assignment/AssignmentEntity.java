@@ -3,14 +3,17 @@ package com.example.VidyaMitra.Domain.Assignment;
 import com.example.VidyaMitra.Domain.AssignmentSubmission.AssignmentSubmissionEntity;
 import com.example.VidyaMitra.Domain.SchoolClass.SchoolClassEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "assignments")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AssignmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

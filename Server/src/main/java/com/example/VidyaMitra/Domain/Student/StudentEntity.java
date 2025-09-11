@@ -3,13 +3,16 @@ package com.example.VidyaMitra.Domain.Student;
 import com.example.VidyaMitra.Domain.AttendanceRecord.AttendanceRecordEntity;
 import com.example.VidyaMitra.Domain.SchoolClass.SchoolClassEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Table(name = "students")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class StudentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,4 +34,9 @@ public class StudentEntity {
 
     @OneToMany(mappedBy = "student")
     private List<AttendanceRecordEntity> attendanceRecords;
+
+    // ✅ Image field for storing in DB
+    @Lob
+    @Column(name = "photo", columnDefinition = "LONGBLOB")
+    private byte[] photo;
 }

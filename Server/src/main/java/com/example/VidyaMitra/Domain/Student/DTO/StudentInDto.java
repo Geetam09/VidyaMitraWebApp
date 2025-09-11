@@ -1,8 +1,11 @@
 package com.example.VidyaMitra.Domain.Student.DTO;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class StudentInDto {
     private String firstName;
     private String lastName;
@@ -11,5 +14,5 @@ public class StudentInDto {
     private String parentContact;
     private String parentEmail;
     private String parentPreferredLanguage;
-    private Long schoolClassId;
+    private Long schoolClassId;private String photo;
 }

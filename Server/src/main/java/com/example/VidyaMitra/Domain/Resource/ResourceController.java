@@ -19,6 +19,7 @@ import java.util.List;
 @RequestMapping("/api/resources")
 @CrossOrigin
 public class ResourceController {
+
     @Autowired
     private ResourceService resourceService;
 

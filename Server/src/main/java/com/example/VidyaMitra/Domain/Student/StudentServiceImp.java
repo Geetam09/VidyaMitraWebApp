@@ -5,8 +5,15 @@ import com.example.VidyaMitra.Domain.SchoolClass.SchoolClassRepository;
 import com.example.VidyaMitra.Domain.Student.DTO.StudentInDto;
 import com.example.VidyaMitra.Domain.Student.DTO.StudentOutDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,5 +84,42 @@ public class StudentServiceImp implements StudentService {
         // like attendance, assignment submissions, etc.
         studentRepository.deleteById(id);
     }
+
+    @Override
+    public void uploadStudentPhoto(Long id, MultipartFile file) {
+        StudentEntity student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        try {
+            student.setPhoto(file.getBytes());
+            studentRepository.save(student);
+        } catch (IOException e) {
+            throw new RuntimeException("Error uploading photo", e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getStudentPhoto(Long id) {
+        StudentEntity student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if (student.getPhoto() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try (InputStream is = new ByteArrayInputStream(student.getPhoto())) {
+            String mimeType = URLConnection.guessContentTypeFromStream(is);
+            if (mimeType == null) {
+                mimeType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(mimeType))
+                    .body(student.getPhoto());
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading photo", e);
+        }
+    }
+
 }
 

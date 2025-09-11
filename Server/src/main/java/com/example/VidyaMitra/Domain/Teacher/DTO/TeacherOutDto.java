@@ -2,7 +2,10 @@ package com.example.VidyaMitra.Domain.Teacher.DTO;
 
 import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class TeacherOutDto {
     private Long id;
     private String firstName;

@@ -5,6 +5,8 @@ import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherInDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherOutDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,7 +15,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.Date;
 
 import java.util.List;
@@ -100,6 +107,42 @@ public class TeacherServiceImp implements TeacherService {
         return teacherRepository.findByEmail(email)
                 .map(TeacherEntity::getId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found with email"+ email));
+    }
+
+    @Override
+    public void uploadTeacherPhoto(Long id, MultipartFile file) {
+        TeacherEntity teacher = teacherRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        try {
+            teacher.setPhoto(file.getBytes());
+            teacherRepository.save(teacher);
+        } catch (IOException e) {
+            throw new RuntimeException("Error uploading photo", e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getTeacherPhoto(Long id) {
+        TeacherEntity teacher = teacherRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if (teacher.getPhoto() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try (InputStream is = new ByteArrayInputStream(teacher.getPhoto())) {
+            String mimeType = URLConnection.guessContentTypeFromStream(is);
+            if (mimeType == null) {
+                mimeType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(mimeType))
+                    .body(teacher.getPhoto());
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading photo", e);
+        }
     }
 
 

@@ -1,8 +1,11 @@
 package com.example.VidyaMitra.Domain.PostComment.DTO;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PostCommentInDto {
     private Long postId;
     private Long authorId; // 🔁 aligned with `author`

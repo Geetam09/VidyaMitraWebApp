@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("/api/postLike/") // A common base path for API endpoints
+@RequestMapping("/api/postLike") // A common base path for API endpoints
 public class PostLikeController {
 
     @Autowired

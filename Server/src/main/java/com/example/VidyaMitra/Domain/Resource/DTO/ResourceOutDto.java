@@ -1,10 +1,13 @@
 package com.example.VidyaMitra.Domain.Resource.DTO;
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResourceOutDto {
     private Long id;
     private String title;
