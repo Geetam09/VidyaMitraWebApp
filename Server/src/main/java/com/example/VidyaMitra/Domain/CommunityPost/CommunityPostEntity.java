@@ -4,14 +4,17 @@ import com.example.VidyaMitra.Domain.PostComment.PostCommentEntity;
 import com.example.VidyaMitra.Domain.PostLike.PostLikeEntity;
 import com.example.VidyaMitra.Domain.Teacher.TeacherEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "community_posts")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CommunityPostEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

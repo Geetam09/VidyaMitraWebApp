@@ -1,10 +1,13 @@
 package com.example.VidyaMitra.Domain.PostComment.DTO;
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PostCommentOutDto {
     private Long id;
     private Long postId;

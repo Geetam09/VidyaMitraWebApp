@@ -5,6 +5,8 @@ import com.example.VidyaMitra.Domain.Student.DTO.StudentInDto;
 import com.example.VidyaMitra.Domain.Student.DTO.StudentOutDto;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
+
 @Component
 public class StudentMapper {
     public static StudentOutDto toDto(StudentEntity entity) {
@@ -24,6 +26,7 @@ public class StudentMapper {
             dto.setSchoolClassId(entity.getSchoolClass().getId());
             dto.setSchoolClassName(entity.getSchoolClass().getGrade() + " " + entity.getSchoolClass().getSection());
         }
+
         return dto;
     }
 
@@ -40,6 +43,7 @@ public class StudentMapper {
         entity.setParentPreferredLanguage(dto.getParentPreferredLanguage());
         entity.setSchoolClass(schoolClass);
         entity.setParentEmail(dto.getParentEmail());
+
         return entity;
     }
 }

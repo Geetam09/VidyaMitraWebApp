@@ -1,9 +1,13 @@
 package com.example.VidyaMitra.Domain.Assignment.DTO;
 
-import lombok.Data;
+import lombok.*;
+
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AssignmentInDto {
     private String title;
     private String description;

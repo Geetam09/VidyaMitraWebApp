@@ -1,8 +1,11 @@
 package com.example.VidyaMitra.Domain.PostLike.DTO;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PostLikeInDto {
     private Long postId;
     private Long TeacherId;

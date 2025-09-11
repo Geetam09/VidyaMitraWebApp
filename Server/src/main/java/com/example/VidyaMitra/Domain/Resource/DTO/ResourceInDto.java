@@ -1,8 +1,11 @@
 package com.example.VidyaMitra.Domain.Resource.DTO;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResourceInDto {
     private String title;
     private String description;

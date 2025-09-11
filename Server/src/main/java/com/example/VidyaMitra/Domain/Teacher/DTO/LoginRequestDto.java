@@ -1,8 +1,11 @@
 package com.example.VidyaMitra.Domain.Teacher.DTO;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class LoginRequestDto {
     private String email;
     private String password;

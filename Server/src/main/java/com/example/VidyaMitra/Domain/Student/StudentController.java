@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/students")
+@CrossOrigin(origins = "http://localhost:5173")
 public class StudentController {
 
     @Autowired
@@ -44,5 +46,19 @@ public class StudentController {
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // 📌 Upload Photo
+    @PostMapping("/StudentPhoto/{id}")
+    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
+                                              @RequestParam("file") MultipartFile file) {
+        studentService.uploadStudentPhoto(id, file);
+        return ResponseEntity.ok("Photo uploaded successfully");
+    }
+
+    // 📌 Get Photo
+    @GetMapping("/StudentPhoto/{id}")
+    public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
+        return studentService.getStudentPhoto(id);
     }
 }

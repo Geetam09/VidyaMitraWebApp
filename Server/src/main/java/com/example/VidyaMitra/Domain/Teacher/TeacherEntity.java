@@ -4,13 +4,16 @@ import com.example.VidyaMitra.Domain.CommunityPost.CommunityPostEntity;
 import com.example.VidyaMitra.Domain.Resource.ResourceEntity;
 import com.example.VidyaMitra.Domain.SchoolClass.SchoolClassEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Table(name = "TeacherInfo") // "user" is often a reserved keyword in SQL
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class TeacherEntity {
 
     @Id
@@ -31,6 +34,10 @@ public class TeacherEntity {
 
     private String subjectTaught;
 
+    @Lob
+    @Column(name = "photo", columnDefinition = "LONGBLOB")
+    private byte[] photo;
+
     // Relationships
     @OneToMany(mappedBy = "teacher")
     private List<SchoolClassEntity> classes;
@@ -41,5 +48,7 @@ public class TeacherEntity {
 
     @OneToMany(mappedBy = "uploader")
     private List<ResourceEntity> uploadedResources;
+
+
 
 }
