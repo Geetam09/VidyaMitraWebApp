@@ -34,6 +34,9 @@ public class TeacherEntity {
 
     private String subjectTaught;
 
+    private String TeachingExperience;
+
+    private String SchoolName;
     @Lob
     @Column(name = "photo", columnDefinition = "LONGBLOB")
     private byte[] photo;

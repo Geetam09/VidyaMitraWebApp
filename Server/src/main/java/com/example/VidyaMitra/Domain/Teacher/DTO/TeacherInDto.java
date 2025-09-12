@@ -12,4 +12,6 @@ public class TeacherInDto {
     private String email;
     private String password;
     private String subjectTaught;
+    private String TeacherExperience;
+    private String SchoolName;
 }

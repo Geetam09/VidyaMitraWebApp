@@ -13,4 +13,6 @@ public class TeacherOutDto {
     private String email;
     private String subjectTaught;
     private int classCount;
+    private String TeachingExperience;
+    private String SchoolName;
 }
