@@ -35,17 +35,17 @@ public class TeacherController {
         return ResponseEntity.noContent().build();
     }
 
-    // 📌 POST Photo
-    @PostMapping("/teacherPhoto/{id}")
-    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
-                                              @RequestParam("file") MultipartFile file) {
-        teacherService.uploadTeacherPhoto(id, file);
-        return ResponseEntity.ok("Photo uploaded successfully");
-    }
-
-    // 📌 Get Photo
-    @GetMapping("/teacherPhoto/{id}")
-    public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
-        return teacherService.getTeacherPhoto(id);
-    }
+//    // 📌 POST Photo
+//    @PostMapping("/teacherPhoto/{id}")
+//    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
+//                                              @RequestParam("file") MultipartFile file) {
+//        teacherService.uploadTeacherPhoto(id, file);
+//        return ResponseEntity.ok("Photo uploaded successfully");
+//    }
+//
+//    // 📌 Get Photo
+//    @GetMapping("/teacherPhoto/{id}")
+//    public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
+//        return teacherService.getTeacherPhoto(id);
+//    }
 }

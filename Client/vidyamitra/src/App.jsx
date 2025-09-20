@@ -1,56 +1,75 @@
+// App.jsx
 import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 import LoginPage from "./components/LoginPage";
 import RegisterPage from "./components/RegisterPage";
-import Dashboard from "./components/Dashboard";
+import StudentsPage from "./components/StudentsPage";
+import AttendancePage from "./components/AttendancePage";
+import TestPapersPage from "./components/TestPapersPage";
+import AssignmentsPage from "./components/AssignmentsPage";
+import TimetablePage from "./components/TimetablePage";
+import ResourceLibraryPage from "./components/ResourceLibraryPage";
+import CommunityPage from "./components/CommunityPage";
+import SettingsPage from "./components/SettingsPage";
+
+import ProfilePage from "./components/ProfilePage";
+import SidebarLayout from "./components/SidebarLayout";
 import VidhyaMitraLanding from "./components/VidhyaMitraLanding";
-import './App.css'
+import Dashboard from "./components/Dashboard"; // Use Dashboard instead of DashboardPage
+import './App.css';
+
+// Wrapper to persist login and redirect
+const ProtectedRoute = ({ token, teacherId, children }) => {
+  if (!token || !teacherId) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
 const App = () => {
-  const [currentView, setCurrentView] = useState('landing');
-  const [token, setToken] = useState(null);
-  const [teacherId, setTeacherId] = useState(null);
+  const [token, setToken] = useState(() => localStorage.getItem("token") || null);
+  const [teacherId, setTeacherId] = useState(() => localStorage.getItem("teacherId") || null);
 
-  // When login is successful, go to dashboard and pass token/teacherId
-  const handleLogin = (loginResponse) => {
-    console.log("Login response in App:", loginResponse);
-    if (loginResponse.token && loginResponse.teacherId) {
-      setToken(loginResponse.token);
-      setTeacherId(loginResponse.teacherId);
-      setCurrentView('dashboard');
-    } else {
-      setToken(null);
-      setTeacherId(null);
-      setCurrentView('login');
-      console.error("Invalid login response:", loginResponse);
-    }
-  };
+  return (
+    <Router>
+      <Routes>
+        {/* Landing Page */}
+        <Route path="/" element={<VidhyaMitraLanding />} />
 
-  const handleLogout = () => {
-    setToken(null);
-    setTeacherId(null);
-    setCurrentView('landing');
-  };
+        {/* Register Page */}
+        <Route path="/register" element={<RegisterPage />} />
 
-  const switchToRegister = () => setCurrentView('register');
-  const switchToLogin = () => setCurrentView('login');
+        {/* Login Page */}
+        <Route path="/login" element={<LoginPage />} />
 
-  // Show landing page first
-  if (currentView === 'landing') {
-    return <VidhyaMitraLanding onLogin={switchToLogin} />;
-  }
+        {/* Dashboard (protected) */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute token={token} teacherId={teacherId}>
+              <Dashboard token={token} teacherId={teacherId} />
+            </ProtectedRoute>
+          }
+        />
 
-  // Show register page
-  if (currentView === 'register') {
-    return <RegisterPage onSwitchToLogin={switchToLogin} />;
-  }
+        <Route element={<SidebarLayout />}>
+          <Route path="/students" element={<StudentsPage />} />
+          <Route path="/attendance" element={<AttendancePage />} />
+          <Route path="/test-papers" element={<TestPapersPage />} />
+          <Route path="/assignments" element={<AssignmentsPage />} />
+          <Route path="/timetable" element={<TimetablePage />} />
+          <Route path="/resources" element={<ResourceLibraryPage />} />
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
 
-  // Show dashboard only if token and teacherId are present
-  if (currentView === 'dashboard' && token && teacherId) {
-    return <Dashboard onLogout={handleLogout} token={token} teacherId={teacherId} />;
-  }
-
-  // Show login page
-  return <LoginPage onLogin={handleLogin} onSwitchToRegister={switchToRegister} />;
+        {/* Redirect unknown routes to dashboard */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </Router>
+  );
 };
 
 export default App;

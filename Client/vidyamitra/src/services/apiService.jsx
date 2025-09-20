@@ -52,26 +52,42 @@ export const apiService = {
   },
   
   // Get specific teacher by ID
-  // In src/services/apiService.js
-getTeacherById: async (token, teacherId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/teachers/getTeacherById/${teacherId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`API Error: ${response.status} ${response.statusText}`, errorText);
-      throw new Error(`Failed to fetch teacher profile: ${response.status}`);
+  getTeacherById: async (teacherId, token) => {
+    const response = await fetch(
+      `http://localhost:8080/api/teachers/getTeacherById/${teacherId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Failed to fetch teacher profile");
+    return await response.json();
+  },
+   getChatResponse: async (token, message) => {
+    try {
+      // URL encode the message to handle special characters
+      const encodedMessage = encodeURIComponent(message);
+      const response = await fetch(`${API_BASE_URL}/api/ChatBot?message=${encodedMessage}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Chat API Error: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Failed to get chat response: ${response.status}`);
+      }
+      
+      return response.text(); // Using text() instead of json() since the endpoint returns a string
+    } catch (error) {
+      console.error("Network error in getChatResponse:", error);
+      throw error;
     }
-    
-    return response.json();
-  } catch (error) {
-    console.error("Network error in getTeacherById:", error);
-    throw error;
   }
-}
 };

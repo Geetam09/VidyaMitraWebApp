@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from "react-router-dom";
 import { BookOpen, Users, FileText, Brain, BarChart3, Globe, ArrowRight, Menu, X, Star, CheckCircle, Sparkles, Zap, Shield, TrendingUp } from 'lucide-react';
 
-export default function VidhyaMitraLanding({ onLogin }) {
+export default function VidhyaMitraLanding() {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentFeature, setCurrentFeature] = useState(0);
   const [scrollY, setScrollY] = useState(0);
@@ -56,9 +58,7 @@ export default function VidhyaMitraLanding({ onLogin }) {
   }, []);
 
   const handleLogin = () => {
-    if (onLogin) {
-      onLogin(); // This will switch to the login page
-    }
+    navigate("/login");
   };
 
   const FloatingOrb = ({ size, color, delay }) => (
