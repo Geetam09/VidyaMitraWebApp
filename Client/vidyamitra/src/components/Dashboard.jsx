@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   GraduationCap, 
@@ -23,6 +23,7 @@ import { apiService } from "../services/apiService";
 // import { apiService } from "../services/apiService";
 import FloatingChatbot from "./FloatingChatbot";
 import SidebarLayout from "./SidebarLayout";
+import DashboardHeader from "./DashboardHeader";
 
 const Dashboard = ({ token, teacherId }) => {
   const [profile, setProfile] = useState(null);
@@ -92,6 +93,7 @@ const Dashboard = ({ token, teacherId }) => {
         handleLogout(); // <-- use this instead of onLogout()
       } finally {
         setLoading(false);
+        setAnimateCards(true);
       }
     };
 
@@ -143,43 +145,12 @@ const Dashboard = ({ token, teacherId }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center group">
-              <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-2 transform group-hover:scale-110 transition-all duration-300 shadow-lg">
-                <GraduationCap className="h-6 w-6 text-white" />
-              </div>
-              <h1 className="ml-3 text-xl font-bold text-gray-800">VidhyaMitra</h1>
-            </div>
-            
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-4">
-                <Globe className="h-5 w-5 text-gray-500 cursor-pointer transform hover:scale-110 transition-all duration-300" />
-                <div className="relative cursor-pointer">
-                  <MessageSquare className="h-5 w-5 text-gray-500 transform hover:scale-110 transition-all duration-300" />
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-bounce">
-                    {staticData.unreadMessages}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="text-gray-700 font-medium">
-                Good morning, <span className="text-purple-600 font-semibold">{profile?.firstName || 'Teacher'}</span>!
-              </div>
-              
-              <button 
-                onClick={handleLogout}
-                className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all duration-300 group"
-              >
-                <LogOut className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Use DashboardHeader instead of local header */}
+      <DashboardHeader
+        firstName={profile?.firstName || "Teacher"}
+        unreadMessages={staticData.unreadMessages}
+        onLogout={handleLogout}
+      />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">

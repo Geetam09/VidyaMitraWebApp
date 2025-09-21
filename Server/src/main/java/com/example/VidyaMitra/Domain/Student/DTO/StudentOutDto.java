@@ -10,9 +10,9 @@ public class StudentOutDto {
     private Long id;
     private String firstName;
     private String lastName;
-    private String rollNumber;
+    private Long rollNumber;
     private String parentName;
-    private String parentContact;
+    private Long parentContact;
     private String parentEmail;
     private String parentPreferredLanguage;
     private Long schoolClassId;

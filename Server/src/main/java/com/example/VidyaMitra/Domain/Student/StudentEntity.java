@@ -20,10 +20,10 @@ public class StudentEntity {
 
     private String firstName;
     private String lastName;
-    private String rollNumber;
+    private Long rollNumber;
 
     private String parentName;
-    private String parentContact;
+    private Long parentContact;
     @Column(unique = true)
     private String parentEmail;
     private String parentPreferredLanguage; // e.g., "en", "mr", "hi"

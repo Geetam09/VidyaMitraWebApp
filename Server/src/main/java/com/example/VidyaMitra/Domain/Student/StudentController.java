@@ -19,10 +19,39 @@ public class StudentController {
     private StudentService studentService;
 
     @PostMapping("/createStudent")
-    public ResponseEntity<StudentOutDto> createStudent(@RequestBody StudentInDto studentDto) {
+    public ResponseEntity<StudentOutDto> createStudent(
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("rollNumber") Long rollNumber,
+            @RequestParam("parentName") String parentName,
+            @RequestParam("parentContact") Long parentContact,
+            @RequestParam("parentEmail") String parentEmail,
+            @RequestParam("parentPreferredLanguage") String parentPreferredLanguage,
+            @RequestParam("schoolClassId") Long schoolClassId,
+            @RequestParam(value = "photo", required = false) MultipartFile photo // optional
+    ) {
+        // Create DTO from request params
+        StudentInDto studentDto = new StudentInDto();
+        studentDto.setFirstName(firstName);
+        studentDto.setLastName(lastName);
+        studentDto.setRollNumber(rollNumber);
+        studentDto.setParentName(parentName);
+        studentDto.setParentContact(parentContact);
+        studentDto.setParentEmail(parentEmail);
+        studentDto.setParentPreferredLanguage(parentPreferredLanguage);
+        studentDto.setSchoolClassId(schoolClassId);
+
+        // Call service to save student
         StudentOutDto createdStudent = studentService.createStudent(studentDto);
+
+        // If photo is present, upload it
+        if (photo != null && !photo.isEmpty()) {
+            studentService.uploadStudentPhoto(createdStudent.getId(), photo);
+        }
+
         return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
     }
+
 
     @GetMapping("/getStudentById/{id}")
     public ResponseEntity<StudentOutDto> getStudentById(@PathVariable Long id) {
@@ -37,10 +66,40 @@ public class StudentController {
     }
 
     @PutMapping("/updateStudent/{id}")
-    public ResponseEntity<StudentOutDto> updateStudent(@PathVariable Long id, @RequestBody StudentInDto studentDto) {
+    public ResponseEntity<StudentOutDto> updateStudent(
+            @PathVariable Long id,
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("rollNumber") Long rollNumber,
+            @RequestParam("parentName") String parentName,
+            @RequestParam("parentContact") Long parentContact,
+            @RequestParam("parentEmail") String parentEmail,
+            @RequestParam("parentPreferredLanguage") String parentPreferredLanguage,
+            @RequestParam("schoolClassId") Long schoolClassId,
+            @RequestParam(value = "photo", required = false) MultipartFile photo // optional
+    ) {
+        // Create DTO from request params
+        StudentInDto studentDto = new StudentInDto();
+        studentDto.setFirstName(firstName);
+        studentDto.setLastName(lastName);
+        studentDto.setRollNumber(rollNumber);
+        studentDto.setParentName(parentName);
+        studentDto.setParentContact(parentContact);
+        studentDto.setParentEmail(parentEmail);
+        studentDto.setParentPreferredLanguage(parentPreferredLanguage);
+        studentDto.setSchoolClassId(schoolClassId);
+
+        // Update student
         StudentOutDto updatedStudent = studentService.updateStudent(id, studentDto);
+
+        // If photo is provided, upload it
+        if (photo != null && !photo.isEmpty()) {
+            studentService.uploadStudentPhoto(updatedStudent.getId(), photo);
+        }
+
         return ResponseEntity.ok(updatedStudent);
     }
+
 
     @DeleteMapping("/deleteStudent/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {

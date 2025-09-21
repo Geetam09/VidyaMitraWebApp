@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/classes/**").hasAuthority("ROLE_TEACHER")
-                        .requestMatchers("/api/students/**").hasAuthority("ROLE_TEACHER")
+                        .requestMatchers("/api/students/**").permitAll()
                         .requestMatchers("/api/resources/**").hasAuthority("ROLE_TEACHER")
                         .requestMatchers("/api/postLike/**").hasAuthority("ROLE_TEACHER")
                         .requestMatchers("/api/comments/**").hasAuthority("ROLE_TEACHER")
