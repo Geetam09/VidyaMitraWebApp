@@ -7,7 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface TeacherRepository extends JpaRepository<TeacherEntity, Long> {
-
-    // Used for login and to check if email is already registered
     Optional<TeacherEntity> findByEmail(String email);
 }

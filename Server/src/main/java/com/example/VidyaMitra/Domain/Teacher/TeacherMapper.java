@@ -1,11 +1,13 @@
 package com.example.VidyaMitra.Domain.Teacher;
 
+import com.example.VidyaMitra.Domain.School.School;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherInDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherOutDto;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TeacherMapper {
+
     public static TeacherOutDto toDto(TeacherEntity entity) {
         if (entity == null) {
             return null;
@@ -17,10 +19,12 @@ public class TeacherMapper {
         dto.setEmail(entity.getEmail());
         dto.setSubjectTaught(entity.getSubjectTaught());
         dto.setClassCount(entity.getClasses() != null ? entity.getClasses().size() : 0);
+        dto.setTeachingExperience(entity.getTeachingExperience());
+        dto.setSchoolName(entity.getSchool() != null ? entity.getSchool().getName() : null);
         return dto;
     }
 
-    public static TeacherEntity toEntity(TeacherInDto dto) {
+    public static TeacherEntity toEntity(TeacherInDto dto, School school) {
         if (dto == null) {
             return null;
         }
@@ -28,8 +32,10 @@ public class TeacherMapper {
         entity.setFirstName(dto.getFirstName());
         entity.setLastName(dto.getLastName());
         entity.setEmail(dto.getEmail());
-        entity.setPassword(dto.getPassword()); // Password will be hashed in the service
+        entity.setPassword(dto.getPassword());
         entity.setSubjectTaught(dto.getSubjectTaught());
+        entity.setTeachingExperience(dto.getTeachingExperience());
+        entity.setSchool(school);
         return entity;
     }
 }

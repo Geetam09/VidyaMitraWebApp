@@ -2,6 +2,7 @@ package com.example.VidyaMitra.Domain.Teacher;
 
 import com.example.VidyaMitra.Domain.CommunityPost.CommunityPostEntity;
 import com.example.VidyaMitra.Domain.Resource.ResourceEntity;
+import com.example.VidyaMitra.Domain.School.School;
 import com.example.VidyaMitra.Domain.SchoolClass.SchoolClassEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,11 +35,16 @@ public class TeacherEntity {
 
     private String subjectTaught;
 
+    private int TeachingExperience;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     @Lob
     @Column(name = "photo", columnDefinition = "LONGBLOB")
     private byte[] photo;
 
-    // Relationships
     @OneToMany(mappedBy = "teacher")
     private List<SchoolClassEntity> classes;
 
