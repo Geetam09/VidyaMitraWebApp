@@ -1,5 +1,5 @@
 // src/services/apiService.js
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'http://localhost:8081';
 
 export const apiService = {
   // ================= AUTH =================
@@ -54,13 +54,24 @@ export const apiService = {
 
   // ================= STUDENTS =================
   createStudent: async (studentData, token) => {
+    const formData = new FormData();
+    formData.append("firstName", studentData.firstName);
+    formData.append("lastName", studentData.lastName);
+    formData.append("rollNumber", studentData.rollNumber);
+    formData.append("parentName", studentData.parentName);
+    formData.append("parentContact", studentData.parentContact);
+    formData.append("parentEmail", studentData.parentEmail);
+    formData.append("parentPreferredLanguage", studentData.parentPreferredLanguage);
+    formData.append("schoolClassId", studentData.schoolClassId);
+    if (studentData.photo) formData.append("photo", studentData.photo);
+
     const response = await fetch(`${API_BASE_URL}/api/students/createStudent`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
+        // Do NOT set Content-Type for FormData!
       },
-      body: JSON.stringify(studentData),
+      body: formData,
     });
     if (!response.ok) throw new Error('Failed to create student');
     return response.json();
@@ -185,3 +196,15 @@ export const apiService = {
     }
   },
 };
+
+const handleLogin = async () => {
+  try {
+    const data = await apiService.login(email, password);
+    localStorage.setItem("token", data.token); // Save token for future requests
+    // Redirect or update UI
+  } catch (err) {
+    alert("Login failed: " + err.message);
+  }
+};
+
+// await apiService.createStudent(newStudent, token);
