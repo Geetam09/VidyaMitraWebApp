@@ -36,10 +36,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> {}) // ✅ Enable CORS so WebConfig is used
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/teachers/**").permitAll()
+                        .requestMatchers("/api/ChatBot/**").permitAll()
+                        .requestMatchers("/api/students/**").hasAuthority("ROLE_TEACHER")
+
+
+                        // Teacher-protected endpoints
                         .requestMatchers("/api/classes/**").hasAuthority("ROLE_TEACHER")
-                        .requestMatchers("/api/students/**").permitAll()
                         .requestMatchers("/api/resources/**").hasAuthority("ROLE_TEACHER")
                         .requestMatchers("/api/postLike/**").hasAuthority("ROLE_TEACHER")
                         .requestMatchers("/api/comments/**").hasAuthority("ROLE_TEACHER")
@@ -47,9 +54,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/attendance/**").hasAuthority("ROLE_TEACHER")
                         .requestMatchers("/api/submissions/**").hasAuthority("ROLE_TEACHER")
                         .requestMatchers("/api/assignments/**").hasAuthority("ROLE_TEACHER")
-                        .requestMatchers("/api/teachers/**").permitAll()
-                        .requestMatchers("/api/ChatBot/**").permitAll()
 
+                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

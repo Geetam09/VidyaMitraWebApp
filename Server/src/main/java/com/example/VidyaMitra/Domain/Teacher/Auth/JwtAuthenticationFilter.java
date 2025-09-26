@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +16,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -22,20 +26,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
-    private final TeacherUserDetailsService userDetailsService;
-
-    public JwtAuthenticationFilter(TeacherUserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
-
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        String authHeader = request.getHeader("Authorization");
 
-        String header = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
 
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
             try {
                 Claims claims = Jwts.parser()
                         .setSigningKey(jwtSecret)
@@ -43,23 +42,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         .getBody();
 
                 String username = claims.getSubject();
-                String role = claims.get("role", String.class);
 
-                UserDetails userDetails = User.builder()
-                        .username(username)
-                        .password("") // no password needed here
-                        .roles(role.replace("ROLE_", "")) // Spring wants just TEACHER
-                        .build();
+                // ✅ Safely extract roles from JWT
+                Object rolesObj = claims.get("roles");
+                Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                if (rolesObj instanceof List<?>) {
+                    for (Object role : (List<?>) rolesObj) {
+                        if (role != null) {
+                            // Ensure it starts with ROLE_
+                            String roleStr = role.toString();
+                            if (!roleStr.startsWith("ROLE_")) {
+                                roleStr = "ROLE_" + roleStr;
+                            }
+                            authorities.add(new SimpleGrantedAuthority(roleStr));
+                        }
+                    }
+                }
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
 
             } catch (Exception e) {
                 System.out.println("JWT validation failed: " + e.getMessage());
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }
