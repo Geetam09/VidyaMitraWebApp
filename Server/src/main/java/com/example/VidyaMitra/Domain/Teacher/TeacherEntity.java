@@ -35,11 +35,9 @@ public class TeacherEntity {
 
     private String subjectTaught;
 
-    private int TeachingExperience;
-
+    private String teachingExperience;
 
     private String schoolName;
-
 
     @Lob
     @Column(name = "photo", columnDefinition = "LONGBLOB")

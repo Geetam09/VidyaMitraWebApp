@@ -13,6 +13,6 @@ public class TeacherOutDto {
     private String email;
     private String subjectTaught;
     private int classCount;
-    private int TeachingExperience;
+    private String teachingExperience;
     private String schoolName;
 }

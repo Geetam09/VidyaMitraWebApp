@@ -12,7 +12,7 @@ public class TeacherInDto {
     private String email;
     private String password;
     private String subjectTaught;
-    private int TeachingExperience;
+    private String teachingExperience;
     private String schoolName;
 
 }
