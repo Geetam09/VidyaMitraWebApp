@@ -16,10 +16,10 @@ public interface TeacherService {
     List<TeacherOutDto> getAllTeachers();
     void deleteTeacher(Long id);
     Long getTeacherIdByEmail(String email);
-<<<<<<< Updated upstream
+
     ///updateTeacher(TeacherInDto teacherDto);
-=======
-    void uploadTeacherPhoto(Long id, MultipartFile file);
-     ResponseEntity<byte[]> getTeacherPhoto(Long id);
->>>>>>> Stashed changes
+
+//    void uploadTeacherPhoto(Long id, MultipartFile file);
+//     ResponseEntity<byte[]> getTeacherPhoto(Long id);
+
 }

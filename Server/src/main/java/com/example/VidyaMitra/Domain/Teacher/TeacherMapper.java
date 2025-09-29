@@ -1,6 +1,5 @@
 package com.example.VidyaMitra.Domain.Teacher;
 
-import com.example.VidyaMitra.Domain.School.School;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherInDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherOutDto;
 import org.springframework.stereotype.Component;
@@ -20,11 +19,11 @@ public class TeacherMapper {
         dto.setSubjectTaught(entity.getSubjectTaught());
         dto.setClassCount(entity.getClasses() != null ? entity.getClasses().size() : 0);
         dto.setTeachingExperience(entity.getTeachingExperience());
-        dto.setSchoolName(entity.getSchool() != null ? entity.getSchool().getName() : null);
+        dto.setSchoolName(entity.getSchoolName());
         return dto;
     }
 
-    public static TeacherEntity toEntity(TeacherInDto dto, School school) {
+    public static TeacherEntity toEntity(TeacherInDto dto) {
         if (dto == null) {
             return null;
         }
@@ -35,7 +34,7 @@ public class TeacherMapper {
         entity.setPassword(dto.getPassword());
         entity.setSubjectTaught(dto.getSubjectTaught());
         entity.setTeachingExperience(dto.getTeachingExperience());
-        entity.setSchool(school);
+        entity.setSchoolName(dto.getSchoolName());
         return entity;
     }
 }

@@ -35,7 +35,7 @@ public class TeacherController {
         return ResponseEntity.noContent().build();
     }
 
-<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
 //    // 📌 POST Photo
 //    @PostMapping("/teacherPhoto/{id}")
 //    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
@@ -49,19 +49,19 @@ public class TeacherController {
 //    public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
 //        return teacherService.getTeacherPhoto(id);
 //    }
-=======
-    //  POST Photo
-    @PostMapping("/teacherPhoto/{id}")
-    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
-                                              @RequestParam("file") MultipartFile file) {
-        teacherService.uploadTeacherPhoto(id, file);
-        return ResponseEntity.ok("Photo uploaded successfully");
-    }
-
-    // Get Photo
-    @GetMapping("/teacherPhoto/{id}")
-    public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
-        return teacherService.getTeacherPhoto(id);
-    }
->>>>>>> Stashed changes
+//=======
+//    //  POST Photo
+//    @PostMapping("/teacherPhoto/{id}")
+//    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
+//                                              @RequestParam("file") MultipartFile file) {
+//        teacherService.uploadTeacherPhoto(id, file);
+//        return ResponseEntity.ok("Photo uploaded successfully");
+//    }
+//
+//    // Get Photo
+//    @GetMapping("/teacherPhoto/{id}")
+//    public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
+//        return teacherService.getTeacherPhoto(id);
+//    }
+////
 }

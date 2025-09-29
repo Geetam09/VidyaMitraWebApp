@@ -1,6 +1,5 @@
 package com.example.VidyaMitra.Domain.Teacher;
 
-
 import com.example.VidyaMitra.Domain.Teacher.DTO.LoginRequestDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherInDto;
 import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherOutDto;
@@ -53,7 +52,7 @@ public class TeacherServiceImp implements TeacherService {
     private String generateToken(String username, List<String> roles) {
         return Jwts.builder()
                 .setSubject(username)
-                .claim("roles", roles)  // 👈 Add roles to token
+                .claim("roles", roles)  // 
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -66,11 +65,14 @@ public class TeacherServiceImp implements TeacherService {
             throw new IllegalStateException("Email already in use.");
         }
 
+        // Create new teacher entity from DTO
         TeacherEntity teacherEntity = TeacherMapper.toEntity(teacherDto);
-
-        // Default role: ROLE_TEACHER
+        
+        // Set encoded password and default role
         teacherEntity.setPassword(passwordEncoder.encode(teacherDto.getPassword()));
+        teacherEntity.setSchoolName(teacherDto.getSchoolName());
 
+        // Save and return the teacher
         TeacherEntity savedTeacher = teacherRepository.save(teacherEntity);
         return TeacherMapper.toDto(savedTeacher);
     }
@@ -104,4 +106,3 @@ public class TeacherServiceImp implements TeacherService {
                 .orElseThrow(() -> new RuntimeException("Teacher not found with email " + email));
     }
 }
-

@@ -13,6 +13,6 @@ public class TeacherInDto {
     private String password;
     private String subjectTaught;
     private int TeachingExperience;
-    private Long schoolId;
+    private String schoolName;
 
 }
