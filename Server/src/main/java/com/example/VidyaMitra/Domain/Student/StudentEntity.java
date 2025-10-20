@@ -20,7 +20,7 @@ public class StudentEntity {
 
     private String firstName;
     private String lastName;
-    private Long rollNumber;
+    private String rollNumber;
 
     private String parentName;
     private Long parentContact;

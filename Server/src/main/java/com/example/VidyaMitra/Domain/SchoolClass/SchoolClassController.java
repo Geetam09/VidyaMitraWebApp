@@ -17,7 +17,6 @@ public class SchoolClassController {
     @Autowired
     private SchoolClassService schoolClassService;
 
-
     @PostMapping("/createClass")
     public ResponseEntity<SchoolClassOutDto> createSchoolClass(@RequestBody SchoolClassInDto classDto) {
         SchoolClassOutDto createdClass = schoolClassService.createSchoolClass(classDto);
@@ -48,3 +47,4 @@ public class SchoolClassController {
         return ResponseEntity.noContent().build();
     }
 }
+

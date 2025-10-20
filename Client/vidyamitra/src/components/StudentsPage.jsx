@@ -5,19 +5,6 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import DashboardHeader from "./DashboardHeader";
 
-// Example dropdown options (replace with your actual data)
-const classOptions = [
-  { value: "", label: "All Classes" },
-  { value: "1", label: "Grade 7B" },
-  { value: "2", label: "Grade 8A" },
-  { value: "3", label: "Grade 9A" },
-];
-const languageOptions = [
-  { value: "English", label: "English" },
-  { value: "Hindi", label: "Hindi" },
-  { value: "Marathi", label: "Marathi" },
-];
-
 function StudentsPage() {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -31,25 +18,39 @@ function StudentsPage() {
   const [profile, setProfile] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newStudent, setNewStudent] = useState({
-    firstName: "",
-    lastName: "",
-    rollNumber: "",
-    parentName: "",
-    parentContact: "",
-    parentEmail: "",
-    parentPreferredLanguage: "",
-    schoolClassId: "",
-    photo: null,
-  });
+  firstName: "",
+  lastName: "",
+  rollNumber: "",
+  parentName: "",
+  parentContact: "",
+  parentEmail: "",
+  parentPreferredLanguage: "",
+  schoolClassId: "",
+  photo: null,
+});
   const [addLoading, setAddLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editStudent, setEditStudent] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
+  // dynamic class options loaded from API
+  const [classOptions, setClassOptions] = useState([{ value: "", label: "All Classes" }]);
+  const [showClassModal, setShowClassModal] = useState(false);
+  const [classLoading, setClassLoading] = useState(false);
+  const [newClass, setNewClass] = useState({ grade: "", section: "", teacherId: teacherId || "" });
 
   // Validation state
   const [formErrors, setFormErrors] = useState({});
   const [editFormErrors, setEditFormErrors] = useState({});
+
+  // languages used in forms
+  const languageOptions = [
+    { value: "English", label: "English" },
+    { value: "Hindi", label: "Hindi" },
+    { value: "Marathi", label: "Marathi" },
+    { value: "Gujarati", label: "Gujarati" },
+    { value: "Kannada", label: "Kannada" }
+  ];
 
   useEffect(() => {
     fetchStudents();
@@ -65,11 +66,51 @@ function StudentsPage() {
       }
     };
     if (token && teacherId) fetchProfile();
+    if (token) fetchClasses();
   }, []);
 
   useEffect(() => {
     filterStudents();
   }, [searchTerm, students, classFilter]);
+
+  // load classes for dropdown
+  const fetchClasses = async () => {
+    try {
+      const classes = await apiService.getAllClasses(token);
+      const options = [
+        { value: "", label: "All Classes" },
+        ...classes.map(c => ({
+          value: c.id,
+          label: c.name || `${c.grade || ''} ${c.section || ''}`.trim() || `Class ${c.id}`
+        }))
+      ];
+      setClassOptions(options);
+    } catch (err) {
+      console.error("Failed to load classes:", err);
+    }
+  };
+
+  // create class handler (uses grade, section, teacherId)
+  const handleCreateClass = async (e) => {
+    e?.preventDefault();
+    if (!newClass.grade.trim() || !newClass.section.trim()) return alert("Grade and section are required");
+    setClassLoading(true);
+    try {
+      const dto = {
+        grade: newClass.grade,
+        section: newClass.section,
+        teacherId: newClass.teacherId || teacherId
+      };
+      await apiService.createClass(dto, token);
+      await fetchClasses();
+      setNewClass({ grade: "", section: "", teacherId: teacherId || "" });
+      setShowClassModal(false);
+    } catch (err) {
+      alert("Failed to create class: " + (err.message || err));
+    } finally {
+      setClassLoading(false);
+    }
+  };
 
   const fetchStudents = async () => {
     try {
@@ -120,115 +161,142 @@ function StudentsPage() {
   // Validation function
   const validateForm = () => {
     const errors = {};
-    if (!newStudent.firstName.trim()) errors.firstName = "First name is required";
-    if (!newStudent.lastName.trim()) errors.lastName = "Last name is required";
-    if (!newStudent.rollNumber) errors.rollNumber = "Roll number is required";
-    if (!newStudent.parentName.trim()) errors.parentName = "Parent name is required";
-    if (!newStudent.parentContact) errors.parentContact = "Parent contact is required";
-    if (!/^\d{10}$/.test(newStudent.parentContact)) errors.parentContact = "Enter a valid 10-digit contact";
-    if (!newStudent.parentEmail.trim()) errors.parentEmail = "Parent email is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newStudent.parentEmail)) errors.parentEmail = "Enter a valid email";
+    if (!newStudent.firstName?.trim()) errors.firstName = "First name is required";
+    if (!newStudent.lastName?.trim()) errors.lastName = "Last name is required";
+    if (!newStudent.rollNumber?.toString().trim()) errors.rollNumber = "Roll number is required";
+    if (!newStudent.parentName?.trim()) errors.parentName = "Parent name is required";
+    
+    // Parent contact validation - must be a valid number
+    if (!newStudent.parentContact) {
+      errors.parentContact = "Parent contact is required";
+    } else if (!/^\d{10}$/.test(newStudent.parentContact.toString())) {
+      errors.parentContact = "Enter a valid 10-digit contact";
+    }
+    
+    // Email validation
+    if (!newStudent.parentEmail?.trim()) {
+      errors.parentEmail = "Parent email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newStudent.parentEmail)) {
+      errors.parentEmail = "Enter a valid email";
+    }
+    
     if (!newStudent.schoolClassId) errors.schoolClassId = "Class is required";
     if (!newStudent.parentPreferredLanguage) errors.parentPreferredLanguage = "Preferred language is required";
+    
     return errors;
   };
 
-  const handleAddStudent = async (e) => {
-    e.preventDefault();
-    const errors = validateForm();
-    setFormErrors(errors);
-    if (Object.keys(errors).length > 0) return;
+ const handleAddStudent = async (e) => {
+  e.preventDefault();
+  const errors = validateForm();
+  setFormErrors(errors);
+  if (Object.keys(errors).length > 0) return;
 
-    setAddLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("firstName", newStudent.firstName);
-      formData.append("lastName", newStudent.lastName);
-      formData.append("rollNumber", newStudent.rollNumber);
-      formData.append("parentName", newStudent.parentName);
-      formData.append("parentContact", newStudent.parentContact);
-      formData.append("parentEmail", newStudent.parentEmail);
-      formData.append("parentPreferredLanguage", newStudent.parentPreferredLanguage);
-      formData.append("schoolClassId", newStudent.schoolClassId);
-      if (newStudent.photo) formData.append("photo", newStudent.photo);
+  setAddLoading(true);
+  try {
+    const formData = new FormData();
 
-      await apiService.createStudent(newStudent, token);
-      setShowAddModal(false);
-      setNewStudent({
-        firstName: "",
-        lastName: "",
-        rollNumber: "",
-        parentName: "",
-        parentContact: "",
-        parentEmail: "",
-        parentPreferredLanguage: "",
-        schoolClassId: "",
-        photo: null,
-      });
-      setFormErrors({});
-      fetchStudents();
-    } catch (err) {
-      alert("Failed to add student: " + err.message);
-    } finally {
-      setAddLoading(false);
+    formData.append("firstName", newStudent.firstName.trim());
+    formData.append("lastName", newStudent.lastName.trim());
+    formData.append("rollNumber", newStudent.rollNumber.toString().trim());
+    formData.append("parentName", newStudent.parentName.trim());
+    formData.append("parentEmail", newStudent.parentEmail.trim());
+    formData.append("parentPreferredLanguage", newStudent.parentPreferredLanguage);
+    formData.append("schoolClassId", newStudent.schoolClassId.toString());
+
+    // ✅ FIX: only append if parentContact is valid
+    if (newStudent.parentContact && !isNaN(newStudent.parentContact)) {
+      formData.append("parentContact", newStudent.parentContact.toString());
     }
-  };
+
+    if (newStudent.photo) {
+      formData.append("photo", newStudent.photo);
+    }
+
+    console.log("FormData contents:");
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    await apiService.createStudent(formData, token);
+
+    setShowAddModal(false);
+    setNewStudent({
+      firstName: "",
+      lastName: "",
+      rollNumber: "",
+      parentName: "",
+      parentContact: "",
+      parentEmail: "",
+      parentPreferredLanguage: "",
+      schoolClassId: "",
+      photo: null,
+    });
+    setFormErrors({});
+    fetchStudents();
+  } catch (err) {
+    alert("Failed to add student: " + err.message);
+  } finally {
+    setAddLoading(false);
+  }
+};
+
 
   const handleFileChange = (e) => {
     setNewStudent({ ...newStudent, photo: e.target.files[0] });
   };
 
   const handleExportPDF = async () => {
-  setExportLoading(true);
-  try {
-    const doc = new jsPDF();
+    setExportLoading(true);
+    try {
+      const doc = new jsPDF();
 
-    // Header
-    doc.setFillColor(59, 130, 246);
-    doc.rect(0, 0, 210, 30, "F");
-    doc.setFontSize(20);
-    doc.setTextColor(255, 255, 255);
-    doc.text("Students List", 105, 15, { align: "center" });
+      // Header
+      doc.setFillColor(59, 130, 246);
+      doc.rect(0, 0, 210, 30, "F");
+      doc.setFontSize(20);
+      doc.setTextColor(255, 255, 255);
+      doc.text("Students List", 105, 15, { align: "center" });
 
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(12);
 
-    // Table
-    const headers = [["Name", "Roll Number", "Class", "Parent Name", "Email", "Status"]];
-    const data = filteredStudents.map((student) => [
-      `${student.firstName || ""} ${student.lastName || ""}`,
-      student.rollNumber || "",
-      student.class || "",
-      student.parentName || "",
-      student.parentEmail || "",
-      student.status || "",
-    ]);
+      // Table
+      const headers = [["Name", "Roll Number", "Class", "Parent Name", "Email", "Status"]];
+      const data = filteredStudents.map((student) => [
+        `${student.firstName || ""} ${student.lastName || ""}`,
+        student.rollNumber || "",
+        student.class || "",
+        student.parentName || "",
+        student.parentEmail || "",
+        student.status || "",
+      ]);
 
-    autoTable(doc, {
-      head: headers,
-      body: data,
-      startY: 40,
-      theme: "grid",
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [79, 70, 229] },
-    });
+      autoTable(doc, {
+        head: headers,
+        body: data,
+        startY: 40,
+        theme: "grid",
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [79, 70, 229] },
+      });
 
-    // Footer
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.text(`Page ${i} of ${pageCount}`, 105, 285, { align: "center" });
-      doc.text(`Exported on ${new Date().toLocaleDateString()}`, 105, 290, { align: "center" });
+      // Footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.text(`Page ${i} of ${pageCount}`, 105, 285, { align: "center" });
+        doc.text(`Exported on ${new Date().toLocaleDateString()}`, 105, 290, { align: "center" });
+      }
+
+      doc.save("students-list.pdf");
+    } catch (err) {
+      alert("Failed to export PDF: " + err.message);
+    } finally {
+      setExportLoading(false);
     }
-
-    doc.save("students-list.pdf");
-  } catch (err) {
-    alert("Failed to export PDF: " + err.message);
-  } finally {
-    setExportLoading(false);
-  }
-};
+  };
 
   // Summary stats
   const totalStudents = students.length;
@@ -245,18 +313,10 @@ function StudentsPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl p-12 text-center max-w-md mx-auto">
         <div className="flex items-center justify-center mb-6">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-blue-600"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-blue-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-3">Loading Students</h2>
-        <p className="text-gray-600">Fetching student records...</p>
-      </div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl p-12 text-center max-w-md mx-auto">
-        <div className="text-red-500 mb-4 text-lg">⚠️ {error}</div>
+        <h2 className="text-3xl font-bold text-gray-800 mb-3">Loading students</h2>
+        <p className="text-gray-600 mb-6">Please wait while we load the students.</p>
         <button
           onClick={fetchStudents}
           className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition"
@@ -322,16 +382,23 @@ function StudentsPage() {
                 />
               </div>
               
-              <div className="w-full md:w-48">
+              <div className="w-full md:w-48 flex items-center gap-2">
                 <select
                   value={classFilter}
                   onChange={(e) => setClassFilter(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white/50"
+                  className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white/50"
                 >
                   {classOptions.map(option => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
+                <button
+                  onClick={() => setShowClassModal(true)}
+                  title="Add Class"
+                  className="hidden md:inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-semibold px-3 py-2 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                >
+                  +
+                </button>
               </div>
             </div>
             
@@ -354,7 +421,7 @@ function StudentsPage() {
                   <>
                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 极 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     Exporting...
                   </>
@@ -524,42 +591,57 @@ function StudentsPage() {
                 &times;
               </button>
               <h2 className="text-2xl font-bold mb-6 text-yellow-700 text-center">Edit Student</h2>
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  // Validation (reuse your validateForm logic, but for editStudent)
-                  const errors = {};
-                  if (!editStudent.firstName?.trim()) errors.firstName = "First name is required";
-                  if (!editStudent.lastName?.trim()) errors.lastName = "Last name is required";
-                  if (!editStudent.rollNumber) errors.rollNumber = "Roll number is required";
-                  if (!editStudent.parentName?.trim()) errors.parentName = "Parent name is required";
-                  if (!editStudent.parentContact) errors.parentContact = "Parent contact is required";
-                  if (!/^\d{10}$/.test(editStudent.parentContact)) errors.parentContact = "Enter a valid 10-digit contact";
-                  if (!editStudent.parentEmail?.trim()) errors.parentEmail = "Parent email is required";
-                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editStudent.parentEmail)) errors.parentEmail = "Enter a valid email";
-                  if (!editStudent.schoolClassId) errors.schoolClassId = "Class is required";
-                  if (!editStudent.parentPreferredLanguage) errors.parentPreferredLanguage = "Preferred language is required";
-                  setEditFormErrors(errors);
-                  if (Object.keys(errors).length > 0) return;
+<form
+  onSubmit={async (e) => {
+    e.preventDefault();
 
-                  setEditLoading(true);
-                  try {
-                    await apiService.updateStudent(editStudent.id, editStudent, token);
-                    setShowEditModal(false);
-                    setEditStudent(null);
-                    setEditFormErrors({});
-                    fetchStudents();
-                  } catch (err) {
-                    alert("Failed to update student: " + err.message);
-                  } finally {
-                    setEditLoading(false);
-                  }
-                }}
-                encType="multipart/form-data"
-                className="space-y-6"
-              >
+    // 🔹 Validation logic
+    const errors = {};
+    if (!editStudent.firstName?.trim()) errors.firstName = "First name is required";
+    if (!editStudent.lastName?.trim()) errors.lastName = "Last name is required";
+    if (!editStudent.rollNumber?.toString().trim()) errors.rollNumber = "Roll number is required";
+    if (!editStudent.parentName?.trim()) errors.parentName = "Parent name is required";
+
+    // Parent contact validation
+    if (!editStudent.parentContact) {
+      errors.parentContact = "Parent contact is required";
+    } else if (!/^\d{10}$/.test(editStudent.parentContact.toString())) {
+      errors.parentContact = "Enter a valid 10-digit contact";
+    }
+
+    // Email validation
+    if (!editStudent.parentEmail?.trim()) {
+      errors.parentEmail = "Parent email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editStudent.parentEmail)) {
+      errors.parentEmail = "Enter a valid email";
+    }
+
+    if (!editStudent.schoolClassId) errors.schoolClassId = "Class is required";
+    if (!editStudent.parentPreferredLanguage)
+      errors.parentPreferredLanguage = "Preferred language is required";
+
+    setEditFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    // 🔹 Proceed to update
+    setEditLoading(true);
+    try {
+      await apiService.updateStudent(editStudent.id, editStudent, token);
+
+      setShowEditModal(false);
+      setEditStudent(null);
+      setEditFormErrors({});
+      fetchStudents();
+    } catch (err) {
+      alert("Failed to update student: " + err.message);
+    } finally {
+      setEditLoading(false);
+    }
+  }}
+  encType="multipart/form-data"
+  className="space-y-6"
+>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Repeat the same fields as Add Student, but use editStudent and setEditStudent */}
                   <div className="group">
                     <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                     <input
@@ -682,6 +764,53 @@ function StudentsPage() {
                     </>
                   )}
                 </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add Class Modal */}
+        {showClassModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+            <div className="bg-white/95 rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-white/30">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Create New Class</h3>
+                <button className="text-gray-500 hover:text-gray-700" onClick={() => setShowClassModal(false)}>&times;</button>
+              </div>
+              <form onSubmit={handleCreateClass} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                  <input
+                    value={newClass.grade}
+                    onChange={e => setNewClass(prev => ({ ...prev, grade: e.target.value }))}
+                    placeholder="e.g., 7"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-400 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                  <input
+                    value={newClass.section}
+                    onChange={e => setNewClass(prev => ({ ...prev, section: e.target.value }))}
+                    placeholder="e.g., A"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-400 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Teacher ID</label>
+                  <input
+                    value={newClass.teacherId}
+                    onChange={e => setNewClass(prev => ({ ...prev, teacherId: e.target.value }))}
+                    placeholder="Teacher ID (optional)"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-400 outline-none"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button type="submit" disabled={classLoading} className="flex-1 px-4 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition">
+                    {classLoading ? "Creating..." : "Create Class"}
+                  </button>
+                  <button type="button" onClick={() => setShowClassModal(false)} className="px-4 py-2 rounded-lg border">Cancel</button>
+                </div>
               </form>
             </div>
           </div>

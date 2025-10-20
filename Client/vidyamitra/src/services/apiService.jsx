@@ -53,30 +53,19 @@ export const apiService = {
   },
 
   // ================= STUDENTS =================
-  createStudent: async (studentData, token) => {
-    const formData = new FormData();
-    formData.append("firstName", studentData.firstName);
-    formData.append("lastName", studentData.lastName);
-    formData.append("rollNumber", studentData.rollNumber);
-    formData.append("parentName", studentData.parentName);
-    formData.append("parentContact", studentData.parentContact);
-    formData.append("parentEmail", studentData.parentEmail);
-    formData.append("parentPreferredLanguage", studentData.parentPreferredLanguage);
-    formData.append("schoolClassId", studentData.schoolClassId);
-    if (studentData.photo) formData.append("photo", studentData.photo);
+ createStudent: async (formData, token) => {
+  const response = await fetch(`${API_BASE_URL}/api/students/createStudent`, {
+    method: 'POST',
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+      // ❌ Do NOT add Content-Type for FormData!
+    },
+    body: formData, // ✅ use directly, not rebuilt
+  });
 
-    const response = await fetch(`${API_BASE_URL}/api/students/createStudent`, {
-      method: 'POST',
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-        // Do NOT set Content-Type for FormData!
-      },
-      body: formData,
-    });
-    if (!response.ok) throw new Error('Failed to create student');
-    return response.json();
-  },
-
+  if (!response.ok) throw new Error('Failed to create student');
+  return response.json();
+},
   getStudentById: async (id, token) => {
     const response = await fetch(`${API_BASE_URL}/api/students/getStudentById/${id}`, {
       headers: {
@@ -103,29 +92,38 @@ export const apiService = {
     return response.json();
   },
 
-  updateStudent: async (id, studentData, token) => {
+updateStudent: async (id, studentData, token) => {
   const formData = new FormData();
 
-  // Append all fields to FormData
-  formData.append("firstName", studentData.firstName);
-  formData.append("lastName", studentData.lastName);
-  formData.append("rollNumber", studentData.rollNumber);
-  formData.append("parentName", studentData.parentName);
-  formData.append("parentContact", studentData.parentContact);
-  formData.append("parentEmail", studentData.parentEmail);
-  formData.append("parentPreferredLanguage", studentData.parentPreferredLanguage);
-  formData.append("schoolClassId", studentData.schoolClassId);
+  formData.append("firstName", studentData.firstName.trim());
+  formData.append("lastName", studentData.lastName.trim());
+  formData.append("rollNumber", studentData.rollNumber.toString().trim());
+  formData.append("parentName", studentData.parentName.trim());
 
-  // Append photo if provided
+  // ✅ Append parentContact only if valid
+  if (studentData.parentContact && !isNaN(studentData.parentContact)) {
+    formData.append("parentContact", studentData.parentContact.toString());
+  }
+
+  formData.append("parentEmail", studentData.parentEmail.trim());
+  formData.append("parentPreferredLanguage", studentData.parentPreferredLanguage);
+  formData.append("schoolClassId", studentData.schoolClassId.toString());
+
   if (studentData.photo) {
     formData.append("photo", studentData.photo);
+  }
+
+  // Debug log (optional)
+  console.log("FormData being sent:");
+  for (let [key, value] of formData.entries()) {
+    console.log(`${key}:`, value);
   }
 
   const response = await fetch(`${API_BASE_URL}/api/students/updateStudent/${id}`, {
     method: "PUT",
     headers: {
       ...(token && { Authorization: `Bearer ${token}` }),
-      // Do NOT set Content-Type manually for FormData; browser handles it
+      // ❌ Don't set Content-Type manually for FormData
     },
     body: formData,
   });
@@ -133,7 +131,6 @@ export const apiService = {
   if (!response.ok) throw new Error("Failed to update student");
   return response.json();
 },
-
   deleteStudent: async (id, token) => {
     const response = await fetch(`${API_BASE_URL}/api/students/deleteStudent/${id}`, {
       method: 'DELETE',
@@ -194,6 +191,81 @@ export const apiService = {
       console.error('Network error in getChatResponse:', error);
       throw error;
     }
+  },
+
+  // ================= CLASSES =================
+  createClass: async (classDto, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/classes/createClass`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(classDto),
+    });
+    if (!response.ok) {
+      const txt = await response.text().catch(() => "");
+      throw new Error(`Failed to create class: ${response.status} ${response.statusText} ${txt}`);
+    }
+    return response.json();
+  },
+
+  getClassById: async (id, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/classes/getClassById/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) {
+      const txt = await response.text().catch(() => "");
+      throw new Error(`Failed to fetch class: ${response.status} ${response.statusText} ${txt}`);
+    }
+    return response.json();
+  },
+
+  getAllClasses: async (token) => {
+    const response = await fetch(`${API_BASE_URL}/api/classes/getAllClasses`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) {
+      const txt = await response.text().catch(() => "");
+      throw new Error(`Failed to fetch classes: ${response.status} ${response.statusText} ${txt}`);
+    }
+    return response.json();
+  },
+
+  updateClass: async (id, classDto, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/classes/updateClass/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(classDto),
+    });
+    if (!response.ok) {
+      const txt = await response.text().catch(() => "");
+      throw new Error(`Failed to update class: ${response.status} ${response.statusText} ${txt}`);
+    }
+    return response.json();
+  },
+
+  deleteClass: async (id, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/classes/deleteClass/${id}`, {
+      method: "DELETE",
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) {
+      const txt = await response.text().catch(() => "");
+      throw new Error(`Failed to delete class: ${response.status} ${response.statusText} ${txt}`);
+    }
+    return true;
   },
 };
 

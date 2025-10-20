@@ -4,6 +4,7 @@ package com.example.VidyaMitra.Domain.Teacher.Auth;
 
 import com.example.VidyaMitra.Domain.Teacher.TeacherEntity;
 import com.example.VidyaMitra.Domain.Teacher.TeacherRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,11 +14,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class TeacherUserDetailsService implements UserDetailsService {
 
-    private final TeacherRepository teacherRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
 
-    public TeacherUserDetailsService(TeacherRepository teacherRepository) {
-        this.teacherRepository = teacherRepository;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

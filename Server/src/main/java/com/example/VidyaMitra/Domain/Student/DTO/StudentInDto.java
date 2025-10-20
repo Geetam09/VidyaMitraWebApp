@@ -9,7 +9,7 @@ import lombok.*;
 public class StudentInDto {
     private String firstName;
     private String lastName;
-    private Long rollNumber;
+    private String rollNumber;
     private String parentName;
     private Long parentContact;
     private String parentEmail;
