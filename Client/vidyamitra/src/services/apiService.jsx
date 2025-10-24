@@ -53,19 +53,18 @@ export const apiService = {
   },
 
   // ================= STUDENTS =================
- createStudent: async (formData, token) => {
-  const response = await fetch(`${API_BASE_URL}/api/students/createStudent`, {
-    method: 'POST',
-    headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
-      // ❌ Do NOT add Content-Type for FormData!
-    },
-    body: formData, // ✅ use directly, not rebuilt
-  });
+  createStudent: async (formData, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/students/createStudent`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    if (!response.ok) throw new Error('Failed to create student');
+    return response.json();
+  },
 
-  if (!response.ok) throw new Error('Failed to create student');
-  return response.json();
-},
   getStudentById: async (id, token) => {
     const response = await fetch(`${API_BASE_URL}/api/students/getStudentById/${id}`, {
       headers: {
@@ -92,45 +91,37 @@ export const apiService = {
     return response.json();
   },
 
-updateStudent: async (id, studentData, token) => {
-  const formData = new FormData();
+  updateStudent: async (id, studentData, token) => {
+    const formData = new FormData();
+    formData.append("firstName", studentData.firstName.trim());
+    formData.append("lastName", studentData.lastName.trim());
+    formData.append("rollNumber", studentData.rollNumber.toString().trim());
+    formData.append("parentName", studentData.parentName.trim());
 
-  formData.append("firstName", studentData.firstName.trim());
-  formData.append("lastName", studentData.lastName.trim());
-  formData.append("rollNumber", studentData.rollNumber.toString().trim());
-  formData.append("parentName", studentData.parentName.trim());
+    if (studentData.parentContact && !isNaN(studentData.parentContact)) {
+      formData.append("parentContact", studentData.parentContact.toString());
+    }
 
-  // ✅ Append parentContact only if valid
-  if (studentData.parentContact && !isNaN(studentData.parentContact)) {
-    formData.append("parentContact", studentData.parentContact.toString());
-  }
+    formData.append("parentEmail", studentData.parentEmail.trim());
+    formData.append("parentPreferredLanguage", studentData.parentPreferredLanguage);
+    formData.append("schoolClassId", studentData.schoolClassId.toString());
 
-  formData.append("parentEmail", studentData.parentEmail.trim());
-  formData.append("parentPreferredLanguage", studentData.parentPreferredLanguage);
-  formData.append("schoolClassId", studentData.schoolClassId.toString());
+    if (studentData.photo) {
+      formData.append("photo", studentData.photo);
+    }
 
-  if (studentData.photo) {
-    formData.append("photo", studentData.photo);
-  }
+    const response = await fetch(`${API_BASE_URL}/api/students/updateStudent/${id}`, {
+      method: "PUT",
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
 
-  // Debug log (optional)
-  console.log("FormData being sent:");
-  for (let [key, value] of formData.entries()) {
-    console.log(`${key}:`, value);
-  }
+    if (!response.ok) throw new Error("Failed to update student");
+    return response.json();
+  },
 
-  const response = await fetch(`${API_BASE_URL}/api/students/updateStudent/${id}`, {
-    method: "PUT",
-    headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
-      // ❌ Don't set Content-Type manually for FormData
-    },
-    body: formData,
-  });
-
-  if (!response.ok) throw new Error("Failed to update student");
-  return response.json();
-},
   deleteStudent: async (id, token) => {
     const response = await fetch(`${API_BASE_URL}/api/students/deleteStudent/${id}`, {
       method: 'DELETE',
@@ -164,7 +155,66 @@ updateStudent: async (id, studentData, token) => {
       },
     });
     if (!response.ok) throw new Error('Failed to fetch photo');
-    return response.blob(); // frontend can convert to object URL
+    return response.blob();
+  },
+
+  // ================= ATTENDANCE =================
+  markAttendance: async (attendanceData, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/attendance/mark`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(attendanceData),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to mark attendance: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+    return response.json();
+  },
+
+  getAttendanceByStudent: async (studentId, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/attendance/student/${studentId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch student attendance: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+    return response.json();
+  },
+
+  getAttendanceByDate: async (date, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/attendance/date/${date}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch attendance by date: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+    return response.json();
+  },
+
+  deleteAttendance: async (attendanceId, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/attendance/${attendanceId}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to delete attendance: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+    return true;
   },
 
   // ================= CHATBOT =================
@@ -269,14 +319,20 @@ updateStudent: async (id, studentData, token) => {
   },
 };
 
+// Utility function for login (optional - you can keep this if needed)
 const handleLogin = async () => {
   try {
     const data = await apiService.login(email, password);
-    localStorage.setItem("token", data.token); // Save token for future requests
+    localStorage.setItem("token", data.token);
     // Redirect or update UI
   } catch (err) {
     alert("Login failed: " + err.message);
   }
 };
 
-// await apiService.createStudent(newStudent, token);
+// Export attendance status enum for consistency
+export const AttendanceStatus = {
+  PRESENT: 'PRESENT',
+  LATE: 'LATE',
+  ABSENT: 'ABSENT'
+};

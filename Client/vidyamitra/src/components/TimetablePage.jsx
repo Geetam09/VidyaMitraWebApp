@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const subjectColors = {
@@ -159,62 +158,166 @@ const TimetablePage = () => {
     setEditing({ timeSlot: null, day: null });
   };
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = () => {
     setExporting(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const doc = new jsPDF('landscape');
-    doc.setFillColor(30, 41, 59);
-    doc.rect(0, 0, 297, 40, 'F');
-    doc.setFontSize(20);
-    doc.setTextColor(255, 255, 255);
-    doc.text("Timetable Management System", 148, 20, { align: "center" });
-    doc.setFontSize(12);
-    doc.setTextColor(200, 200, 200);
-    doc.text("Professional Weekly Schedule", 148, 30, { align: "center" });
-    const tableColumn = ["Time", ...days];
-    const tableRows = timetable.map(slot => [
-      slot.time,
-      ...days.map(day => {
-        const cell = slot[day];
-        if (!cell.subject) return "";
-        if (cell.subject === "Break" || cell.subject === "Lunch Break") return cell.subject;
-        let cellText = cell.subject;
-        if (cell.class) cellText += `\n${cell.class}`;
-        if (cell.room) cellText += `\n${cell.room}`;
-        if (cell.inProgress) cellText += "\n(In Progress)";
-        return cellText;
-      })
-    ]);
-    doc.autoTable({
-      startY: 45,
-      head: [tableColumn],
-      body: tableRows,
-      styles: {
-        fontSize: 8,
-        cellPadding: 3,
-        halign: "center",
-        valign: "middle",
-        lineColor: [100, 100, 100],
-        lineWidth: 0.1,
-        font: "helvetica"
-      },
-      headStyles: {
-        fillColor: [67, 56, 202],
-        textColor: 255,
-        fontStyle: "bold",
-        fontSize: 9,
-        cellPadding: 4
-      },
-      alternateRowStyles: {
-        fillColor: [248, 250, 252]
-      },
-      columnStyles: {
-        0: { fillColor: [241, 245, 249], fontStyle: "bold", fontSize: 8 }
-      },
-      margin: { top: 45 }
-    });
-    doc.save("professional-timetable.pdf");
-    setExporting(false);
+    
+    try {
+      // Create PDF in landscape mode
+      const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 10;
+      const tableWidth = pageWidth - (margin * 2);
+      const colWidth = tableWidth / (days.length + 1);
+      let yPosition = margin;
+
+      // Add header with background
+      doc.setFillColor(30, 41, 59);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      
+      // Title
+      doc.setFontSize(18);
+      doc.setTextColor(255, 255, 255);
+      doc.text("Timetable Management System", pageWidth / 2, 15, { align: "center" });
+      
+      // Subtitle
+      doc.setFontSize(10);
+      doc.setTextColor(200, 200, 200);
+      doc.text("Professional Weekly Schedule", pageWidth / 2, 22, { align: "center" });
+
+      yPosition = 35;
+
+      // Draw table header
+      doc.setFillColor(67, 56, 202);
+      doc.rect(margin, yPosition, tableWidth, 8, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'bold');
+      
+      // Time column header
+      doc.text("Time", margin + (colWidth / 2), yPosition + 5, { align: "center" });
+      
+      // Day columns headers
+      days.forEach((day, index) => {
+        const x = margin + colWidth + (index * colWidth);
+        doc.text(day, x + (colWidth / 2), yPosition + 5, { align: "center" });
+      });
+
+      yPosition += 8;
+
+      // Draw table rows
+      timetable.forEach((slot, rowIndex) => {
+        // Alternate row background
+        if (rowIndex % 2 === 0) {
+          doc.setFillColor(248, 250, 252);
+          doc.rect(margin, yPosition, tableWidth, 15, 'F');
+        }
+
+        // Draw cell borders
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.1);
+        
+        // Time cell
+        doc.rect(margin, yPosition, colWidth, 15);
+        doc.setTextColor(128, 90, 213);
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(8);
+        doc.text(slot.time, margin + (colWidth / 2), yPosition + 8, { align: "center" });
+
+        // Day cells
+        days.forEach((day, dayIndex) => {
+          const x = margin + colWidth + (dayIndex * colWidth);
+          doc.rect(x, yPosition, colWidth, 15);
+          
+          const cell = slot[day];
+          if (cell?.subject) {
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'normal');
+            
+            let textY = yPosition + 4;
+            
+            // Subject
+            doc.setFontSize(7);
+            const subjectLines = doc.splitTextToSize(cell.subject, colWidth - 4);
+            subjectLines.forEach(line => {
+              doc.text(line, x + (colWidth / 2), textY, { align: "center" });
+              textY += 3;
+            });
+            
+            // Class and Room
+            if (cell.class || cell.room) {
+              const details = [];
+              if (cell.class) details.push(cell.class);
+              if (cell.room) details.push(cell.room);
+              
+              doc.setFontSize(6);
+              const detailsText = details.join(' - ');
+              const detailsLines = doc.splitTextToSize(detailsText, colWidth - 4);
+              detailsLines.forEach(line => {
+                doc.text(line, x + (colWidth / 2), textY, { align: "center" });
+                textY += 2.5;
+              });
+            }
+            
+            // In Progress
+            if (cell.inProgress) {
+              doc.setFontSize(5);
+              doc.setTextColor(59, 130, 246);
+              doc.text("[In Progress]", x + (colWidth / 2), textY, { align: "center" });
+            }
+          } else {
+            doc.setTextColor(150, 150, 150);
+            doc.setFontSize(7);
+            doc.text("Free", x + (colWidth / 2), yPosition + 8, { align: "center" });
+          }
+        });
+
+        yPosition += 15;
+
+        // Check if we need a new page
+        if (yPosition > pageHeight - 20) {
+          doc.addPage();
+          yPosition = margin;
+          
+          // Redraw header on new page
+          doc.setFillColor(67, 56, 202);
+          doc.rect(margin, yPosition, tableWidth, 8, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(9);
+          doc.setFont(undefined, 'bold');
+          doc.text("Time", margin + (colWidth / 2), yPosition + 5, { align: "center" });
+          days.forEach((day, index) => {
+            const x = margin + colWidth + (index * colWidth);
+            doc.text(day, x + (colWidth / 2), yPosition + 5, { align: "center" });
+          });
+          yPosition += 8;
+        }
+      });
+
+      // Add footer
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text(
+        `Generated on ${new Date().toLocaleDateString()}`,
+        pageWidth / 2,
+        pageHeight - 10,
+        { align: "center" }
+      );
+
+      // Save the PDF
+      doc.save("timetable-schedule.pdf");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Error generating PDF. Please try again.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const getSubjectColor = (subject) => {
@@ -247,6 +350,7 @@ const TimetablePage = () => {
             </p>
           </div>
         </div>
+        
         {/* Action Bar */}
         <div className="flex flex-col lg:flex-row justify-between items-center mb-8 gap-4">
           <div>
@@ -262,13 +366,6 @@ const TimetablePage = () => {
             >
               <span>+</span>
               New Subject
-            </button>
-            <button
-              onClick={() => {/* addNewPeriod logic here if needed */}}
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg hover:shadow-indigo-500/25 hover:scale-105 transition-all duration-300 flex items-center gap-2"
-            >
-              <span>⏰</span>
-              Add Period
             </button>
             <button
               onClick={handleExportPDF}
@@ -292,6 +389,7 @@ const TimetablePage = () => {
             </button>
           </div>
         </div>
+
         {/* Timetable */}
         <div className="rounded-3xl p-6 bg-white border border-gray-100 shadow-xl mb-12">
           <div className="overflow-x-auto">
@@ -316,14 +414,14 @@ const TimetablePage = () => {
                     </td>
                     {days.map(day => {
                       const cell = slot[day];
-                      const colorClass = subjectColors[cell.subject] || "bg-gray-100 text-gray-700";
+                      const colorClass = subjectColors[cell?.subject] || "bg-gray-100 text-gray-700";
                       return (
                         <td
                           key={day}
                           className={`relative p-3 min-w-[140px] min-h-[80px] cursor-pointer rounded-2xl transition-all duration-300 ${colorClass} border border-gray-100 shadow hover:shadow-lg hover:scale-105 hover:border-gray-200`}
                           onClick={() => handleCellClick(slot.time, day)}
                         >
-                          {cell.subject ? (
+                          {cell?.subject ? (
                             <div className="flex flex-col items-center text-center h-full justify-center">
                               <span className="font-semibold text-base leading-tight">
                                 {cell.subject}
@@ -358,6 +456,7 @@ const TimetablePage = () => {
             </table>
           </div>
         </div>
+
         {/* Subject Legend */}
         <div className="rounded-3xl p-6 bg-white border border-gray-100 shadow-xl">
           <h3 className="text-xl font-semibold text-gray-800 mb-6 text-center">Subject Legend</h3>
@@ -374,6 +473,7 @@ const TimetablePage = () => {
           </div>
         </div>
       </div>
+
       {/* Edit Modal */}
       {editing.timeSlot !== null && editing.day !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
@@ -490,6 +590,7 @@ const TimetablePage = () => {
           </div>
         </div>
       )}
+
       {/* Add Subject Modal */}
       {showAddForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
@@ -525,16 +626,16 @@ const TimetablePage = () => {
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-violet-400 focus:outline-none bg-white/80 transition-all duration-200"
               >
                 <option value="">Select Color Theme</option>
-                <option value="bg-gradient-to-br from-blue-600 to-blue-700">Blue</option>
-                <option value="bg-gradient-to-br from-indigo-500 to-indigo-600">Indigo</option>
-                <option value="bg-gradient-to-br from-violet-500 to-violet-600">Violet</option>
-                <option value="bg-gradient-to-br from-blue-500 to-indigo-600">Blue-Indigo</option>
-                <option value="bg-gradient-to-br from-indigo-500 to-blue-600">Indigo-Blue</option>
+                <option value="bg-blue-100 text-blue-700">Blue</option>
+                <option value="bg-green-100 text-green-700">Green</option>
+                <option value="bg-purple-100 text-purple-700">Purple</option>
+                <option value="bg-yellow-100 text-yellow-700">Yellow</option>
+                <option value="bg-pink-100 text-pink-700">Pink</option>
               </select>
               <button
                 onClick={() => {
                   if (!newSubject.name.trim()) return;
-                  subjectColors[newSubject.name] = newSubject.color || "bg-gradient-to-br from-blue-500 to-indigo-600";
+                  subjectColors[newSubject.name] = newSubject.color || "bg-blue-100 text-blue-700";
                   setNewSubject({ name: "", room: "", color: "" });
                   setShowAddForm(false);
                 }}
