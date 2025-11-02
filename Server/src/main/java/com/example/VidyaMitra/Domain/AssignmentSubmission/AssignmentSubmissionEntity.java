@@ -28,5 +28,6 @@ public class AssignmentSubmissionEntity {
 
     private LocalDateTime submittedAt;
     private String grade; // e.g., "A+", "85%"
+    private String comment;//completed or not
     private String fileUrl; // Link to uploaded file if any
 }

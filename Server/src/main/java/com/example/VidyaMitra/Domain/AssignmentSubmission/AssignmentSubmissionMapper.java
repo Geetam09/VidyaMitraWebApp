@@ -18,6 +18,7 @@ public class AssignmentSubmissionMapper {
         entity.setGrade(dto.getGrade());
         entity.setFileUrl(dto.getFileUrl());
         entity.setSubmittedAt(LocalDateTime.now());
+        entity.setComment(dto.getComment());
         return entity;
     }
 
@@ -29,6 +30,7 @@ public class AssignmentSubmissionMapper {
         dto.setGrade(entity.getGrade());
         dto.setFileUrl(entity.getFileUrl());
         dto.setSubmittedAt(entity.getSubmittedAt());
+        dto.setComment(entity.getComment());
         return dto;
     }
 }

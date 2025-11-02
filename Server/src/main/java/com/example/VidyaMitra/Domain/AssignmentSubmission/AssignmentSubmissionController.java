@@ -15,7 +15,7 @@ public class AssignmentSubmissionController {
 
     private final AssignmentSubmissionService submissionService;
 
-    @PostMapping
+    @PostMapping("/submit")
     public ResponseEntity<AssignmentSubmissionOutDto> submit(@RequestBody AssignmentSubmissionInDto dto) {
         return ResponseEntity.ok(submissionService.submitAssignment(dto));
     }

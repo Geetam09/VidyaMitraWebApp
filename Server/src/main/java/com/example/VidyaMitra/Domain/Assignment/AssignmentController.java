@@ -21,7 +21,7 @@ public class AssignmentController {
         return ResponseEntity.ok(assignmentService.createAssignment(dto));
     }
 
-    @GetMapping
+    @GetMapping("/getAllAssignments")
     public ResponseEntity<List<AssignmentOutDto>> getAllAssignments() {
         return ResponseEntity.ok(assignmentService.getAllAssignments());
     }

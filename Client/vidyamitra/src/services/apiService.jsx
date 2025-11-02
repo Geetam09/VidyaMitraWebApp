@@ -51,6 +51,72 @@ export const apiService = {
     if (!response.ok) throw new Error('Failed to fetch teacher profile');
     return await response.json();
   },
+   // ================= ASSIGNMENTS =================
+  createAssignment: async (assignmentData, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/assignments/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(assignmentData),
+    });
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(
+        `Failed to create assignment: ${response.status} ${response.statusText} - ${errorData}`
+      );
+    }
+    return response.json();
+  },
+
+  getAllAssignments: async (token) => {
+    const response = await fetch(`${API_BASE_URL}/api/assignments/getAllAssignments`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch assignments');
+    return response.json();
+  },
+
+  getAssignmentById: async (id, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/assignments/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch assignment by ID');
+    return response.json();
+  },
+
+  getAssignmentsByClass: async (classId, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/assignments/class/${classId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch assignments by class');
+    return response.json();
+  },
+
+  deleteAssignment: async (id, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/assignments/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to delete assignment');
+    return true;
+  },
+
 
   // ================= STUDENTS =================
   createStudent: async (formData, token) => {
@@ -90,6 +156,43 @@ export const apiService = {
     if (!response.ok) throw new Error('Failed to fetch students');
     return response.json();
   },
+
+    // ================= ASSIGNMENT SUBMISSIONS =================
+  submitAssignment: async (submissionData, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/submissions/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(submissionData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(
+        `Failed to submit assignment: ${response.status} ${response.statusText} - ${errorData}`
+      );
+    }
+
+    return response.json();
+  },
+
+  getSubmissionsByAssignment: async (assignmentId, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/submissions/assignment/${assignmentId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok)
+      throw new Error(`Failed to fetch submissions for assignment ID: ${assignmentId}`);
+
+    return response.json();
+  },
+
 
   updateStudent: async (id, studentData, token) => {
     const formData = new FormData();
@@ -336,3 +439,7 @@ export const AttendanceStatus = {
   LATE: 'LATE',
   ABSENT: 'ABSENT'
 };
+
+
+
+

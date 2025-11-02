@@ -15,5 +15,6 @@ public class AssignmentSubmissionOutDto {
     private Long studentId;
     private String grade;
     private String fileUrl;
+    private String comment;
     private LocalDateTime submittedAt;
 }
