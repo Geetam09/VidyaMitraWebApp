@@ -27,24 +27,24 @@ public class PostLikeServiceImp implements PostLikeService {
         @Transactional
         @Override
         public PostLikeOutDto likePost(PostLikeInDto likeDto) {
-            // 1. Validation
+            // Validation
             if (postLikeRepository.existsByTeacher_IdAndPost_Id(likeDto.getTeacherId(), likeDto.getPostId())) {
                 throw new IllegalStateException("Post already liked by this user.");
             }
 
-            // 2. Fetching related data
+            // Fetching related data
             TeacherEntity user = teacherRepository.findById(likeDto.getTeacherId())
                     .orElseThrow(() -> new RuntimeException("User not found with id: " + likeDto.getTeacherId()));
             CommunityPostEntity post = communityPostRepository.findById(likeDto.getPostId())
                     .orElseThrow(() -> new RuntimeException("Post not found with id: " + likeDto.getPostId()));
 
-            // 3. Mapping DTO to Entity using the mapper
+            //Mapping DTO to Entity using the mapper
             PostLikeEntity newLike = PostLikeMapper.toEntity(likeDto, user, post);
 
-            // 4. Saving to the database
+            // Saving to the database
             PostLikeEntity savedLike = postLikeRepository.save(newLike);
 
-            // 5. Mapping Entity to DTO for the response
+            //Mapping Entity to DTO for the response
             return PostLikeMapper.toDto(savedLike);
         }
 

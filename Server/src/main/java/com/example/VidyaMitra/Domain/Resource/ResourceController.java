@@ -63,7 +63,7 @@ public class ResourceController {
     @DeleteMapping("/deleteResource/{id}")
     public ResponseEntity<Void> deleteResource(@PathVariable Long id) {
         resourceService.deleteResource(id);
-        return ResponseEntity.noContent().build(); // Returns HTTP 204 No Content
+        return ResponseEntity.noContent().build();
     }
 }
 

@@ -20,7 +20,7 @@ public class ResourceEntity {
     private String title;
     private String description;
     private String fileUrl;
-    private String fileType; // e.g., "PDF", "Worksheet", "Video"
+    private String fileType;
 
     @ManyToOne
     @JoinColumn(name = "uploader_id")

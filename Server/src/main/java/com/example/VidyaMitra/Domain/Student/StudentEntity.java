@@ -26,7 +26,7 @@ public class StudentEntity {
     private Long parentContact;
     @Column(unique = true)
     private String parentEmail;
-    private String parentPreferredLanguage; // e.g., "en", "mr", "hi"
+    private String parentPreferredLanguage;
 
     @ManyToOne
     @JoinColumn(name = "class_id", nullable = false)
@@ -35,7 +35,7 @@ public class StudentEntity {
     @OneToMany(mappedBy = "student")
     private List<AttendanceRecordEntity> attendanceRecords;
 
-    // ✅ Image field for storing in DB
+
     @Lob
     @Column(name = "photo", columnDefinition = "LONGBLOB")
     private byte[] photo;

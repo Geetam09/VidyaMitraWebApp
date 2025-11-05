@@ -9,6 +9,6 @@ import lombok.*;
 public class ResourceInDto {
     private String title;
     private String description;
-    private String fileType; // e.g., "PDF", "Worksheet"
+    private String fileType;
     private Long uploaderId;
 }

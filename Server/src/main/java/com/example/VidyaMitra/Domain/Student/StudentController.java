@@ -28,9 +28,9 @@ public class StudentController {
             @RequestParam("parentEmail") String parentEmail,
             @RequestParam("parentPreferredLanguage") String parentPreferredLanguage,
             @RequestParam("schoolClassId") Long schoolClassId,
-            @RequestParam(value = "photo", required = false) MultipartFile photo // optional
+            @RequestParam(value = "photo", required = false) MultipartFile photo
     ) {
-        // Create DTO from request params
+
         StudentInDto studentDto = new StudentInDto();
         studentDto.setFirstName(firstName);
         studentDto.setLastName(lastName);
@@ -41,10 +41,10 @@ public class StudentController {
         studentDto.setParentPreferredLanguage(parentPreferredLanguage);
         studentDto.setSchoolClassId(schoolClassId);
 
-        // Call service to save student
+
         StudentOutDto createdStudent = studentService.createStudent(studentDto);
 
-        // If photo is present, upload it
+
         if (photo != null && !photo.isEmpty()) {
             studentService.uploadStudentPhoto(createdStudent.getId(), photo);
         }
@@ -76,9 +76,9 @@ public class StudentController {
             @RequestParam("parentEmail") String parentEmail,
             @RequestParam("parentPreferredLanguage") String parentPreferredLanguage,
             @RequestParam("schoolClassId") Long schoolClassId,
-            @RequestParam(value = "photo", required = false) MultipartFile photo // optional
+            @RequestParam(value = "photo", required = false) MultipartFile photo
     ) {
-        // Create DTO from request params
+
         StudentInDto studentDto = new StudentInDto();
         studentDto.setFirstName(firstName);
         studentDto.setLastName(lastName);
@@ -89,10 +89,10 @@ public class StudentController {
         studentDto.setParentPreferredLanguage(parentPreferredLanguage);
         studentDto.setSchoolClassId(schoolClassId);
 
-        // Update student
+
         StudentOutDto updatedStudent = studentService.updateStudent(id, studentDto);
 
-        // If photo is provided, upload it
+
         if (photo != null && !photo.isEmpty()) {
             studentService.uploadStudentPhoto(updatedStudent.getId(), photo);
         }
@@ -107,7 +107,7 @@ public class StudentController {
         return ResponseEntity.noContent().build();
     }
 
-    // 📌 Upload Photo
+
     @PostMapping("/StudentPhoto/{id}")
     public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
                                               @RequestParam("file") MultipartFile file) {
@@ -115,7 +115,7 @@ public class StudentController {
         return ResponseEntity.ok("Photo uploaded successfully");
     }
 
-    // 📌 Get Photo
+
     @GetMapping("/StudentPhoto/{id}")
     public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
         return studentService.getStudentPhoto(id);

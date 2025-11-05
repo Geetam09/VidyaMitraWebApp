@@ -4,7 +4,6 @@ import com.example.VidyaMitra.Domain.Teacher.DTO.TeacherOutDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,13 +29,13 @@ public class TeacherController {
 
     @DeleteMapping("/deleteTeacher/{id}")
     public ResponseEntity<Void> deleteTeacher(@PathVariable Long id) {
-        // Note: This endpoint should be protected and likely only accessible to an Admin role.
+        //  This endpoint should be protected and likely only accessible to an Admin role.
         teacherService.deleteTeacher(id);
         return ResponseEntity.noContent().build();
     }
 
 //<<<<<<< Updated upstream
-//    // 📌 POST Photo
+//    // POST Photo
 //    @PostMapping("/teacherPhoto/{id}")
 //    public ResponseEntity<String> uploadPhoto(@PathVariable Long id,
 //                                              @RequestParam("file") MultipartFile file) {
@@ -44,7 +43,7 @@ public class TeacherController {
 //        return ResponseEntity.ok("Photo uploaded successfully");
 //    }
 //
-//    // 📌 Get Photo
+//    // Get Photo
 //    @GetMapping("/teacherPhoto/{id}")
 //    public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
 //        return teacherService.getTeacherPhoto(id);

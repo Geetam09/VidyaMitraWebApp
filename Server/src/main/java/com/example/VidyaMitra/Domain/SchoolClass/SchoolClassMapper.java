@@ -19,7 +19,7 @@ public class SchoolClassMapper {
             dto.setTeacherId(entity.getTeacher().getId());
             dto.setTeacherName(entity.getTeacher().getFirstName() + " " + entity.getTeacher().getLastName());
         }
-        // Safely get student count
+
         dto.setStudentCount(entity.getStudents() != null ? entity.getStudents().size() : 0);
         return dto;
     }

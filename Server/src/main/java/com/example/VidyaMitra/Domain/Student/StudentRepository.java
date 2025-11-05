@@ -7,6 +7,6 @@ import java.util.List;
 
 @Repository
 public interface StudentRepository extends JpaRepository<StudentEntity, Long> {
-    // Finds all students belonging to a specific class
+
     List<StudentEntity> findBySchoolClass_Id(Long classId);
 }

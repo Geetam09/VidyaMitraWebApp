@@ -20,10 +20,10 @@ public class SchoolClassEntity {
     private Long id;
 
     @Column(nullable = false)
-    private String grade; // e.g., "Grade 8"
+    private String grade;
 
     @Column(nullable = false)
-    private String section; // e.g., "A"
+    private String section;
 
     @ManyToOne
     @JoinColumn(name = "teacher_id")

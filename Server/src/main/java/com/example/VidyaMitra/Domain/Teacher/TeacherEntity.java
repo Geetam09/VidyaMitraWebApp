@@ -10,7 +10,7 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Table(name = "TeacherInfo") // "user" is often a reserved keyword in SQL
+@Table(name = "TeacherInfo")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -52,7 +52,5 @@ public class TeacherEntity {
 
     @OneToMany(mappedBy = "uploader")
     private List<ResourceEntity> uploadedResources;
-
-
 
 }

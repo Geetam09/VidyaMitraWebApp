@@ -80,8 +80,6 @@ public class StudentServiceImp implements StudentService {
         if (!studentRepository.existsById(id)) {
             throw new RuntimeException("Student not found with id: " + id);
         }
-        // Note: In a real system, you might need to handle deleting associated records
-        // like attendance, assignment submissions, etc.
         studentRepository.deleteById(id);
     }
 

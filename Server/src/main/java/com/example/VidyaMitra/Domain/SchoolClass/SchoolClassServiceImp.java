@@ -66,8 +66,6 @@ public class SchoolClassServiceImp implements SchoolClassService {
         if (!schoolClassRepository.existsById(id)) {
             throw new RuntimeException("SchoolClass not found with id: " + id);
         }
-        // Note: Add business logic here for what happens to students in the deleted class.
-        // For example, you might need to re-assign them before deleting.
         schoolClassRepository.deleteById(id);
     }
 }
