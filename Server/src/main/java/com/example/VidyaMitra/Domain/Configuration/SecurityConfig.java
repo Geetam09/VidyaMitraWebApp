@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/teachers/**").permitAll()
                         .requestMatchers("/api/ChatBot/**").permitAll()
+                        .requestMatchers("/api/v1/generate/**").permitAll()
                         .requestMatchers("/api/students/**").hasAuthority("ROLE_TEACHER")
 
 

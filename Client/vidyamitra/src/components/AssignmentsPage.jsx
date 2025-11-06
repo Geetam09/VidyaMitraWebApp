@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
+import FloatingChatbot from "./FloatingChatbot";
+import DashboardHeader from "./DashboardHeader";
 
 const AssignmentsPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -558,6 +560,9 @@ const AssignmentsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
+      <DashboardHeader 
+        title="Assignments"
+      />
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
@@ -1173,6 +1178,7 @@ const AssignmentsPage = () => {
           </div>
         </div>
       )}
+       <FloatingChatbot/>
     </div>
   );
 };

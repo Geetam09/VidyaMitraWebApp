@@ -420,6 +420,61 @@ export const apiService = {
     }
     return true;
   },
+
+  // ================= TEST GENERATION =================
+  generateTestPaper: async (testSpecification, token = null) => {
+    // Validate the test specification structure
+    if (!testSpecification.subject || !testSpecification.topic || !testSpecification.difficulty) {
+      throw new Error('Missing required fields: subject, topic, and difficulty are required');
+    }
+
+    if (!testSpecification.breakdown) {
+      throw new Error('Breakdown is required');
+    }
+
+    // Ensure all breakdown fields are present and are numbers
+    const breakdown = {
+      multipleChoice: testSpecification.breakdown.multipleChoice || 5,
+      fillInBlanks: testSpecification.breakdown.fillInBlanks || 0,
+      shortAnswer: testSpecification.breakdown.shortAnswer || 0,
+      longAnswer: testSpecification.breakdown.longAnswer || 0
+    };
+
+    // Create the final payload matching the Java record structure
+    const payload = {
+      subject: testSpecification.subject,
+      topic: testSpecification.topic,
+      difficulty: testSpecification.difficulty,
+      totalQuestions: testSpecification.totalQuestions || 10,
+      breakdown: breakdown
+    };
+
+    console.log('Sending test specification:', payload);
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/generate/test-paper`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Test generation failed: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        const errorText = await response.text();
+        errorMessage = errorText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
 };
 
 // Utility function for login (optional - you can keep this if needed)

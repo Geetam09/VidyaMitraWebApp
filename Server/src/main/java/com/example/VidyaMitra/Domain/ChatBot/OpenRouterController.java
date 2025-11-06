@@ -10,7 +10,7 @@ import java.util.*;
 public class OpenRouterController {
 
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String API_KEY = "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";
+    private static final String API_KEY = "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";
 
     @GetMapping
     public ResponseEntity<String> getChatResponse(@RequestParam("message") String message) {
@@ -24,7 +24,7 @@ public class OpenRouterController {
 
             // Create request body
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "deepseek/deepseek-chat-v3.1:free");
+            body.put("model", "minimax/minimax-m2:free");
 
             List<Map<String, String>> messages = new ArrayList<>();
             messages.add(Map.of("role", "user", "content", message));

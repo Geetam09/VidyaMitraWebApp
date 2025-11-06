@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { apiService } from '../services/apiService';
 import {
   LayoutDashboard, Users, CalendarCheck, FileText, BookOpen, Clock, Library,
   MessageCircle, Settings, User, LogOut, Menu, ChevronLeft
@@ -22,6 +23,71 @@ const menuItems = [
 const SidebarLayout = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
+  const [teacher, setTeacher] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTeacherProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const teacherId = localStorage.getItem('teacherId');
+        
+        if (token && teacherId) {
+          const teacherData = await apiService.getTeacherById(teacherId, token);
+          setTeacher(teacherData);
+        } else {
+          // If no token or teacherId, redirect to login
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error('Failed to fetch teacher profile:', error);
+        // If token is invalid, clear storage and redirect to login
+        localStorage.removeItem('token');
+        localStorage.removeItem('teacherId');
+        navigate("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeacherProfile();
+  }, [navigate]);
+
+  const handleLogout = () => {
+    // Clear authentication data
+    localStorage.removeItem('token');
+    localStorage.removeItem('teacherId');
+    setTeacher(null);
+    navigate("/login");
+  };
+
+  // Format teacher name with appropriate title
+  const getTeacherName = () => {
+    if (loading) return "Loading...";
+    if (!teacher) return "Teacher";
+    
+    const title = teacher.gender?.toLowerCase() === 'male' ? 'Mr.' : 'Ms.';
+    return `${title} ${teacher.firstName || ''} ${teacher.lastName || ''}`.trim();
+  };
+
+  // Get teacher subject or default role
+  const getTeacherRole = () => {
+    if (loading) return "Loading...";
+    if (!teacher) return "Teacher";
+    
+    return teacher.subject ? `${teacher.subject} Teacher` : "Teacher";
+  };
+
+  // Show loading state while fetching teacher data
+  if (loading) {
+    return (
+      <div className="sidebar-layout">
+        <div className="loading-container">
+          <div className="loading-spinner">Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="sidebar-layout">
@@ -44,8 +110,8 @@ const SidebarLayout = () => {
             </div>
             {isOpen && (
               <div className="profile-info">
-                <div className="sidebar-profile-name">Ms. Anderson</div>
-                <div className="sidebar-profile-role">Mathematics Teacher</div>
+                <div className="sidebar-profile-name">{getTeacherName()}</div>
+                <div className="sidebar-profile-role">{getTeacherRole()}</div>
               </div>
             )}
           </div>
@@ -73,7 +139,7 @@ const SidebarLayout = () => {
             <li>
               <button
                 className="sidebar-link logout"
-                onClick={() => navigate("/login")}
+                onClick={handleLogout}
                 title="Logout"
               >
                 <span className="sidebar-icon"><LogOut size={18}/></span>

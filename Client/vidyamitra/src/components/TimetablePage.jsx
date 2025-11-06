@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import FloatingChatbot from "./FloatingChatbot";
+
 import jsPDF from "jspdf";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -648,6 +650,7 @@ const TimetablePage = () => {
           </div>
         </div>
       )}
+      <FloatingChatbot />
     </div>
   );
 };

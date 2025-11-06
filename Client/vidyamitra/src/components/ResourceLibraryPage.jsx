@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import FloatingChatbot from "./FloatingChatbot";
+
 
 const ResourceLibraryPage = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -592,6 +594,7 @@ const ResourceLibraryPage = () => {
           </div>
         </section>
       </div>
+      <FloatingChatbot />
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiService, AttendanceStatus } from '../services/apiService';
+import FloatingChatbot from "./FloatingChatbot";
+
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -1090,6 +1092,7 @@ const AttendancePage = () => {
           </div>
         </div>
       )}
+      <FloatingChatbot />
     </div>
   );
 };

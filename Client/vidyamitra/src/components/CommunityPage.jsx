@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import FloatingChatbot from "./FloatingChatbot";
+
 
 const CommunityPage = () => {
   const [activeCategory, setActiveCategory] = useState('All Posts');
@@ -227,6 +229,7 @@ const CommunityPage = () => {
           </div>
         </div>
       </div>
+      <FloatingChatbot />
     </div>
   );
 };
