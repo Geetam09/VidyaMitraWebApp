@@ -9,5 +9,4 @@ import lombok.*;
 public class CommunityPostInDto {
     private Long authorId;
     private String content;
-    private String imageUrl;
 }

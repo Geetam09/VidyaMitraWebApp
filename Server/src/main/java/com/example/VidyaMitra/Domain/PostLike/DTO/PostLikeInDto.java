@@ -1,5 +1,6 @@
 package com.example.VidyaMitra.Domain.PostLike.DTO;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Getter
@@ -7,6 +8,9 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostLikeInDto {
+    @JsonProperty("postId")
     private Long postId;
-    private Long TeacherId;
+    
+    @JsonProperty("TeacherId")  // Match the exact case from JSON
+    private Long teacherId;
 }

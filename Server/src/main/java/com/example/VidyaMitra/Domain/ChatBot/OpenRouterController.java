@@ -10,7 +10,7 @@ import java.util.*;
 public class OpenRouterController {
 
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String API_KEY = "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";
+    private static final String API_KEY = "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";
 
     @GetMapping
     public ResponseEntity<String> getChatResponse(@RequestParam("message") String message) {

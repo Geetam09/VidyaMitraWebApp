@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class CommunityPostOutDto {
     private Long id;
     private Long authorId;
+    private String authorName;
     private String content;
     private String imageUrl;
     private LocalDateTime createdAt;

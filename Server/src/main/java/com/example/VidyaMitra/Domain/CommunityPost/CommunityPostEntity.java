@@ -27,7 +27,9 @@ public class CommunityPostEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    private String imageUrl;
+    @Lob
+    @Column(name = "imageUrl", columnDefinition = "LONGBLOB")
+    private byte[] imageUrl;
 
     private LocalDateTime createdAt;
 

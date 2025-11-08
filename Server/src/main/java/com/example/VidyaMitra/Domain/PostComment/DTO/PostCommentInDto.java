@@ -10,5 +10,5 @@ public class PostCommentInDto {
     private Long postId;
     private Long authorId; // 🔁 aligned with `author`
     private String content;
-    private Long TeacherId;
+
 }

@@ -20,7 +20,7 @@ import java.util.*;
 public class TestGenerationService {
 
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String API_KEY = "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";
+    private static final String API_KEY = "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";
 
     private final String promptTemplateString = """
         Generate a test paper with the following specifications:

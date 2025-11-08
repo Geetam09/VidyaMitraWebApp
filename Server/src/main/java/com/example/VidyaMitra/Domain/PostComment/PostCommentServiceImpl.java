@@ -25,7 +25,11 @@ public class PostCommentServiceImpl implements PostCommentService {
 
     @Override
     public PostCommentOutDto addComment(PostCommentInDto dto) {
-        TeacherEntity teacher = teacherRepository.findById(dto.getTeacherId())
+        if (dto.getAuthorId() == null || dto.getPostId() == null ) {
+            throw new IllegalArgumentException("Author ID and Post ID must not be null");
+        }
+
+        TeacherEntity teacher = teacherRepository.findById(dto.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
         CommunityPostEntity post = communityPostRepository.findById(dto.getPostId())
                 .orElseThrow(() -> new RuntimeException("Post not found"));

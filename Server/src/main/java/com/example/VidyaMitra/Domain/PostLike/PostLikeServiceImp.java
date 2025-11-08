@@ -9,6 +9,7 @@ import com.example.VidyaMitra.Domain.Teacher.TeacherRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 @Service
 public class PostLikeServiceImp implements PostLikeService {
@@ -22,46 +23,60 @@ public class PostLikeServiceImp implements PostLikeService {
     @Autowired
     private CommunityPostRepository communityPostRepository;
 
+    @Transactional
+    @Override
+    public PostLikeOutDto likePost(PostLikeInDto likeDto) {
+        // Validate input
+        Assert.notNull(likeDto, "Like data cannot be null");
+        
+        Long teacherId = likeDto.getTeacherId();
+        Long postId = likeDto.getPostId();
+        
+        Assert.notNull(teacherId, "Teacher ID cannot be null");
+        Assert.notNull(postId, "Post ID cannot be null");
 
-
-        @Transactional
-        @Override
-        public PostLikeOutDto likePost(PostLikeInDto likeDto) {
-            // Validation
-            if (postLikeRepository.existsByTeacher_IdAndPost_Id(likeDto.getTeacherId(), likeDto.getPostId())) {
-                throw new IllegalStateException("Post already liked by this user.");
-            }
-
-            // Fetching related data
-            TeacherEntity user = teacherRepository.findById(likeDto.getTeacherId())
-                    .orElseThrow(() -> new RuntimeException("User not found with id: " + likeDto.getTeacherId()));
-            CommunityPostEntity post = communityPostRepository.findById(likeDto.getPostId())
-                    .orElseThrow(() -> new RuntimeException("Post not found with id: " + likeDto.getPostId()));
-
-            //Mapping DTO to Entity using the mapper
-            PostLikeEntity newLike = PostLikeMapper.toEntity(likeDto, user, post);
-
-            // Saving to the database
-            PostLikeEntity savedLike = postLikeRepository.save(newLike);
-
-            //Mapping Entity to DTO for the response
-            return PostLikeMapper.toDto(savedLike);
+        // Check if the like already exists
+        if (postLikeRepository.existsByTeacher_IdAndPost_Id(teacherId, postId)) {
+            throw new IllegalStateException("Post already liked by this user.");
         }
+
+        // Fetching related data
+        TeacherEntity user = teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + teacherId));
+                
+        CommunityPostEntity post = communityPostRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
+
+        // Mapping DTO to Entity using the mapper
+        PostLikeEntity newLike = PostLikeMapper.toEntity(likeDto, user, post);
+
+        // Saving to the database
+        PostLikeEntity savedLike = postLikeRepository.save(newLike);
+
+        // Mapping Entity to DTO for the response
+        return PostLikeMapper.toDto(savedLike);
+    }
 
     @Transactional
     @Override
-    public void unlikePost(Long postId, Long TeacherId) {
-        long deletedCount = postLikeRepository.deleteByTeacher_IdAndPost_Id(TeacherId, postId);
+    public void unlikePost(Long postId, Long teacherId) {
+        Assert.notNull(postId, "Post ID cannot be null");
+        Assert.notNull(teacherId, "Teacher ID cannot be null");
+        
+        postLikeRepository.deleteByTeacher_IdAndPost_Id(teacherId, postId);
     }
 
     @Override
     public long getLikeCount(Long postId) {
+        Assert.notNull(postId, "Post ID cannot be null");
         return postLikeRepository.countByPost_Id(postId);
     }
 
     @Override
-    public boolean hasUserLikedPost(Long postId, Long TeacherId) {
-        return postLikeRepository.existsByTeacher_IdAndPost_Id(TeacherId, postId);
+    public boolean hasUserLikedPost(Long postId, Long teacherId) {
+        if (postId == null || teacherId == null) {
+            return false;
+        }
+        return postLikeRepository.existsByTeacher_IdAndPost_Id(teacherId, postId);
     }
-
 }
