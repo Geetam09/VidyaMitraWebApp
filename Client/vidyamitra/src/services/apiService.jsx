@@ -1,6 +1,13 @@
 // src/services/apiService.js
 const API_BASE_URL = 'http://localhost:8081';
 
+// Add this utility function at the top of the file
+const validateToken = (token) => {
+  if (!token || typeof token !== 'string' || token.split('.').length !== 3) {
+    throw new Error('Invalid authentication token. Please login again.');
+  }
+};
+
 export const apiService = {
   // ================= AUTH =================
   login: async (email, password) => {
@@ -472,6 +479,158 @@ export const apiService = {
       throw new Error(errorMessage);
     }
 
+    return response.json();
+  },
+    // ================= COMMUNITY POSTS =================
+  createPost: async (postData, token) => {
+  const formData = new FormData();
+  formData.append('authorId', postData.authorId); // Append authorId
+  formData.append('content', postData.content); // Append content
+  if (postData.image) {
+    formData.append('image', postData.image); // Append image if it exists
+  }
+
+  const response = await fetch(`${API_BASE_URL}/community-posts/createPost`, {
+    method: 'POST',
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }), // Include token if available
+    },
+    body: formData, // Send form data
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(
+      `Failed to create post: ${response.status} ${response.statusText} - ${errorData}`
+    );
+  }
+  return response.json();
+},
+
+  getAllPosts: async (token) => {
+    const response = await fetch(`${API_BASE_URL}/community-posts/getAllPosts`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch community posts');
+    return response.json();
+  },
+
+  getPostById: async (id, token) => {
+    const response = await fetch(`${API_BASE_URL}/community-posts/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch post by ID');
+    return response.json();
+  },
+
+  deletePost: async (id, token) => {
+    const response = await fetch(`${API_BASE_URL}/community-posts/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to delete post');
+    return true;
+  },
+
+  
+  // ================= POST COMMENTS =================
+  addComment: async (commentData, token) => {
+    const response = await fetch(`${API_BASE_URL}/comments/add`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(commentData),
+    });
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(
+        `Failed to add comment: ${response.status} ${response.statusText} - ${errorData}`
+      );
+    }
+    return response.json();
+  },
+
+  getCommentsByPostId: async (postId, token) => {
+    const response = await fetch(`${API_BASE_URL}/comments/post/${postId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch comments');
+    return response.json();
+  },
+
+  deleteComment: async (commentId, token) => {
+    const response = await fetch(`${API_BASE_URL}/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to delete comment');
+    return true;
+  },
+    // ================= POST LIKES =================
+  likePost: async (likeData, token) => {
+    validateToken(token);
+    const response = await fetch(`${API_BASE_URL}/api/postLike/addLikes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        postId: Number(likeData.postId),
+        TeacherId: Number(likeData.TeacherId)
+      }),
+    });
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Failed to like post: ${response.status} ${errorData}`);
+    }
+    return response.json();
+  },
+
+  unlikePost: async (postId, TeacherId, token) => {
+    validateToken(token);
+    const response = await fetch(
+      `${API_BASE_URL}/api/postLike/unlike?postId=${Number(postId)}&TeacherId=${Number(TeacherId)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+      }
+    );
+    if (!response.ok) throw new Error('Failed to unlike post');
+    return true;
+  },
+
+  getLikeCount: async (postId, token) => {
+    validateToken(token);
+    const response = await fetch(
+      `${API_BASE_URL}/api/postLike/posts/likesCount/${Number(postId)}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+      }
+    );
+    if (!response.ok) throw new Error('Failed to fetch like count');
     return response.json();
   },
 

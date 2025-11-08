@@ -147,96 +147,140 @@ const TestPapersPage = () => {
       return { questions: [], answers: [] };
     }
 
-    console.log('Parsing test paper text:', testPaperText);
+    const text = testPaperText.replace(/\r\n/g, '\n').trim();
+
+    // Split into questions part and answer key part (case-insensitive)
+    const answerKeyIndex = text.search(/(^|\n)\s*Answer\s+Key\b/i);
+    const questionsPart = answerKeyIndex >= 0 ? text.slice(0, answerKeyIndex) : text;
+    const answerPart = answerKeyIndex >= 0 ? text.slice(answerKeyIndex) : '';
 
     const questions = [];
     const answers = [];
-    
-    // Split into questions and answer key sections
-    const sections = testPaperText.split('---');
-    const questionsSection = sections[1] || testPaperText;
-    const answerKeySection = sections[2] || '';
 
-    // Parse questions
-    const lines = questionsSection.split('\n').filter(line => line.trim());
-    let currentQuestion = null;
-    let inQuestionsSection = false;
+    const lines = questionsPart.split('\n');
 
-    lines.forEach(line => {
-      const trimmedLine = line.trim();
-      
-      if (trimmedLine.includes('**Questions**') || trimmedLine.includes('Questions')) {
-        inQuestionsSection = true;
-        return;
-      }
-      
-      if (inQuestionsSection && trimmedLine.match(/^\d+\./)) {
-        if (currentQuestion) {
-          questions.push(currentQuestion);
-        }
-        const questionNumber = parseInt(trimmedLine.match(/^(\d+)/)[1]);
-        currentQuestion = {
-          id: questionNumber,
+    let current = null;
+
+    const clean = (s) => s.replace(/\s*<---\s*$/i, '').trim();
+
+    for (let raw of lines) {
+      const line = raw.replace(/\u00A0/g, ' ').trim();
+      if (!line) continue;
+
+      // Question start: 1) or 1. or "1) Question..."
+      const qMatch = line.match(/^(\d+)[\)\.]\s*(.*)$/);
+      if (qMatch) {
+        if (current) questions.push(current);
+        current = {
+          id: Number(qMatch[1]),
+          question: clean(qMatch[2] || ''),
           type: 'multipleChoice',
-          question: trimmedLine.replace(/^\d+\.\s*/, ''),
           marks: 1,
           options: []
         };
-      } 
-      else if (inQuestionsSection && trimmedLine.match(/^[A-D]\)/)) {
-        if (currentQuestion) {
-          currentQuestion.options.push(trimmedLine);
+        continue;
+      }
+
+      // Option line: A) text
+      const optMatch = line.match(/^([A-D])\)\s*(.*)$/i);
+      if (optMatch && current) {
+        current.options.push({
+          label: optMatch[1].toUpperCase(),
+          text: clean(optMatch[2] || ''),
+          raw: line
+        });
+        continue;
+      }
+
+      // Continuation line: append to last option if exists, else to question text
+      if (current) {
+        if (current.options.length > 0) {
+          const last = current.options[current.options.length - 1];
+          last.text = (last.text + ' ' + clean(line)).trim();
+          last.raw = (last.raw + ' ' + line).trim();
+        } else {
+          current.question = (current.question + ' ' + clean(line)).trim();
         }
       }
-      else if (inQuestionsSection && currentQuestion && trimmedLine && 
-               !trimmedLine.includes('**') && 
-               !trimmedLine.includes('---') &&
-               !trimmedLine.match(/^[A-D]\)/)) {
-        currentQuestion.question += ' ' + trimmedLine;
-      }
-    });
-
-    if (currentQuestion) {
-      questions.push(currentQuestion);
     }
 
-    // Parse answer key
-    if (answerKeySection) {
-      const answerLines = answerKeySection.split('\n').filter(line => line.trim());
-      let inAnswerKey = false;
+    if (current) questions.push(current);
 
-      answerLines.forEach(line => {
-        const trimmedLine = line.trim();
-        
-        if (trimmedLine.includes('**Answer Key**') || trimmedLine.includes('Answer Key')) {
-          inAnswerKey = true;
-          return;
+    // Parse Answer Key section if present
+    if (answerPart) {
+      const aLines = answerPart.split('\n').map(l => l.trim()).filter(Boolean);
+      let inKey = false;
+      for (const l of aLines) {
+        if (/^Answer\s+Key\b/i.test(l)) {
+          inKey = true;
+          continue;
         }
-        
-        if (inAnswerKey && trimmedLine.match(/^\d+\.?\s*[A-D]/)) {
-          const match = trimmedLine.match(/^(\d+)\.?\s*([A-D])/);
-          if (match) {
-            const questionNumber = parseInt(match[1]);
-            const answer = match[2];
-            
-            const question = questions.find(q => q.id === questionNumber);
-            if (question) {
-              answers.push({
-                id: questionNumber,
-                question: question.question,
-                answer: answer,
-                type: question.type
-              });
-            }
+        if (!inKey) continue;
+        // Match "1) C" or "1. C" or "1)C" or "1 C"
+        const m = l.match(/^(\d+)[\)\.]?\s*([A-D])/i) || l.match(/^(\d+)\s+([A-D])/i);
+        if (m) {
+          const qNum = Number(m[1]);
+          const ansLetter = m[2].toUpperCase();
+          const qObj = questions.find(q => q.id === qNum);
+          answers.push({
+            id: qNum,
+            question: qObj ? qObj.question : '',
+            answer: ansLetter,
+            type: qObj ? qObj.type : 'multipleChoice'
+          });
+        }
+      }
+    }
+
+    // Fallback: if no explicit Answer Key, look for inline "<---" markers in options
+    if (answers.length === 0) {
+      for (const q of questions) {
+        const found = q.options.find(opt => /\<---\s*$/i.test(opt.raw) || /\<---/i.test(opt.raw));
+        if (found) {
+          answers.push({
+            id: q.id,
+            question: q.question,
+            answer: found.label,
+            type: q.type
+          });
+        }
+      }
+    }
+
+    // Final fallback: if still empty, try to detect any "1) C" lines that were not in explicit answerPart
+    if (answers.length === 0) {
+      const allLines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      for (const l of allLines) {
+        const m = l.match(/^(\d+)[\)\.]?\s*([A-D])$/i);
+        if (m) {
+          const qNum = Number(m[1]);
+          const ansLetter = m[2].toUpperCase();
+          const qObj = questions.find(q => q.id === qNum);
+          if (!answers.some(a => a.id === qNum)) {
+            answers.push({
+              id: qNum,
+              question: qObj ? qObj.question : '',
+              answer: ansLetter,
+              type: qObj ? qObj.type : 'multipleChoice'
+            });
           }
         }
-      });
+      }
     }
 
-    console.log('Parsed questions:', questions);
-    console.log('Parsed answers:', answers);
+    // Normalize questions.options to display strings "A) text"
+    const normalizedQuestions = questions.map(q => ({
+      id: q.id,
+      question: q.question,
+      type: q.type,
+      marks: q.marks,
+      options: q.options.map(o => `${o.label}) ${o.text}`)
+    }));
 
-    return { questions, answers };
+    // Sort answers by id
+    answers.sort((a, b) => a.id - b.id);
+
+    return { questions: normalizedQuestions, answers };
   };
 
   const handleFileUpload = (event) => {
