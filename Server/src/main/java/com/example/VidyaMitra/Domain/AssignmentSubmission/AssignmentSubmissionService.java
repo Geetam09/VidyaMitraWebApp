@@ -1,7 +1,5 @@
 package com.example.VidyaMitra.Domain.AssignmentSubmission;
 
-import com.example.VidyaMitra.Domain.Assignment.DTO.AssignmentInDto;
-import com.example.VidyaMitra.Domain.Assignment.DTO.AssignmentOutDto;
 import com.example.VidyaMitra.Domain.AssignmentSubmission.DTO.AssignmentSubmissionInDto;
 import com.example.VidyaMitra.Domain.AssignmentSubmission.DTO.AssignmentSubmissionOutDto;
 

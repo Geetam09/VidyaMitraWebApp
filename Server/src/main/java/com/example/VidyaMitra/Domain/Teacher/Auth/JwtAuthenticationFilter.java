@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -43,14 +41,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 String username = claims.getSubject();
 
-                // ✅ Safely extract roles from JWT
                 Object rolesObj = claims.get("roles");
                 Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
                 if (rolesObj instanceof List<?>) {
                     for (Object role : (List<?>) rolesObj) {
                         if (role != null) {
-                            // Ensure it starts with ROLE_
                             String roleStr = role.toString();
                             if (!roleStr.startsWith("ROLE_")) {
                                 roleStr = "ROLE_" + roleStr;

@@ -1,6 +1,5 @@
 package com.example.VidyaMitra.Domain.AssignmentSubmission;
 
-import com.example.VidyaMitra.Domain.Assignment.AssignmentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
