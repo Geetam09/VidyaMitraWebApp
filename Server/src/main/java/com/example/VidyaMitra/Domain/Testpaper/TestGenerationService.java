@@ -1,17 +1,12 @@
 package com.example.VidyaMitra.Domain.Testpaper;
 
 
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
 
 import org.springframework.http.*;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -20,7 +15,7 @@ import java.util.*;
 public class TestGenerationService {
 
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String API_KEY = "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";
+    private static final String API_KEY = "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";
 
     private final String promptTemplateString = """
         Generate a test paper with the following specifications:
@@ -65,7 +60,7 @@ public class TestGenerationService {
 
             // Body
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "minimax/minimax-m2:free");
+            body.put("model", "openai/gpt-3.5-turbo");
 
             List<Map<String, String>> messages = List.of(
                     Map.of("role", "user", "content", finalPrompt)
