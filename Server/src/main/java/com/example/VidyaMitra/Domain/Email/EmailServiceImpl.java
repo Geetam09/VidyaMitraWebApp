@@ -1,8 +1,11 @@
 package com.example.VidyaMitra.Domain.Email;
 
+import com.example.VidyaMitra.Exception.EmailSendException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,33 @@ import org.springframework.stereotype.Service;
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
+    private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
+
+    @Override
+    public void sendTestLink(String to, String testTitle, String testLink, String startTime, String endTime) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject("New Test Assigned: " + testTitle);
+
+            String content = String.format(
+                    "Hello,\n\nYou have a new test assigned!\n\n" +
+                            "Title: %s\nLink: %s\nStart: %s\nEnd: %s\n\nGood luck!",
+                    testTitle, testLink, startTime, endTime
+            );
+
+            helper.setText(content, false);
+            mailSender.send(message);
+
+            logger.info("✅ Test link email sent successfully to {}", to);
+
+        } catch (MessagingException e) {
+            logger.error("❌ Failed to send test link email to {}: {}", to, e.getMessage(), e);
+            throw new EmailSendException("Failed to send test link email to: " + to, e);
+        }
+    }
 
     @Override
     public void sendAbsenceNotification(String parentEmail, String studentName, String date) {
@@ -40,10 +70,11 @@ public class EmailServiceImpl implements EmailService {
             helper.setText(htmlContent, true);
             mailSender.send(message);
 
-            System.out.println("✅ Absence email sent successfully to " + parentEmail);
+            logger.info("✅ Absence email sent successfully to {}", parentEmail);
 
         } catch (MessagingException e) {
-            throw new RuntimeException("❌ Failed to send absence email: " + e.getMessage(), e);
+            logger.error("❌ Failed to send absence email to {}: {}", parentEmail, e.getMessage(), e);
+            throw new EmailSendException("Failed to send absence email to: " + parentEmail, e);
         }
     }
 }
