@@ -15,7 +15,7 @@ import java.util.*;
 public class TestGenerationService {
 
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String API_KEY = "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";
+    private static final String API_KEY = "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";
 
     private final String promptTemplateString = """
         Generate a test paper with the following specifications:
@@ -60,7 +60,7 @@ public class TestGenerationService {
 
             // Body
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "tngtech/deepseek-r1t2-chimera:free");
+            body.put("model", "meta-llama/llama-3.3-70b-instruct:free");
 
             List<Map<String, String>> messages = List.of(
                     Map.of("role", "user", "content", finalPrompt)
