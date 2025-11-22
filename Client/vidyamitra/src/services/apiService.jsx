@@ -481,6 +481,26 @@ export const apiService = {
 
     return response.json();
   },
+
+  sendTestPaper: async (testPaperData, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/test-paper`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(testPaperData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(
+        `Failed to send test paper: ${response.status} ${response.statusText} - ${errorData}`
+      );
+    }
+    return response.json();
+  },
+
     // ================= COMMUNITY POSTS =================
   createPost: async (postData, token) => {
   const formData = new FormData();

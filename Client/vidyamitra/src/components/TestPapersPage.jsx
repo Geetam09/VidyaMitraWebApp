@@ -1,9 +1,14 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import FloatingChatbot from "./FloatingChatbot";
 import { apiService } from "../services/apiService";
 
 const TestPapersPage = () => {
+  const [selectedClass, setSelectedClass] = useState('');
+
+  const [classes, setClasses] = useState([]);
   const [subject, setSubject] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [topic, setTopic] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [numQuestions, setNumQuestions] = useState(10);
@@ -18,7 +23,13 @@ const TestPapersPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [error, setError] = useState('');
-  
+
+  const token = localStorage.getItem('token');
+
+  const formatClassName = (cls) => {
+    return `${cls.grade} ${cls.section}`;
+  };
+
   // New state for test paper details
   const [testDetails, setTestDetails] = useState({
     schoolName: '',
@@ -35,6 +46,39 @@ const TestPapersPage = () => {
   const subjects = ['Mathematics', 'Science', 'History', 'English', 'Computer Science', 'Physics', 'Chemistry', 'Biology'];
   const difficulties = ['Easy', 'Medium', 'Hard', 'Advanced'];
   const examTypes = ['Unit Test', 'Mid-Term', 'Final Exam', 'Quiz', 'Practice Test'];
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const classesData = await apiService.getAllClasses(token);
+      setClasses(classesData);
+      // if (classesData.length > 0 && !selectedClass) {
+      //   setSelectedClass(classesData[0].id);
+      // }
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+      alert('Failed to load classes');
+    }
+  };
+
+
+  const sendPaper = async (classId) => {
+    try {
+      const response = await apiService.sendTestPaper( {
+        classId,
+        startTime,
+        endTime,
+        title: testDetails.examType,
+        createdByTeacherId: localStorage.getItem('teacherId'),
+      }, token);
+    } catch (error) {
+      console.error('Error sending test paper:', error);
+      alert('Failed to send test paper');
+    }
+  }
 
   const handleQuestionTypeChange = useCallback((type) => {
     setQuestionTypes(prev => ({
@@ -58,13 +102,13 @@ const TestPapersPage = () => {
 
     setIsGenerating(true);
     setError('');
-    
+
     try {
       // Calculate breakdown based on selected question types
       const selectedTypes = Object.keys(questionTypes).filter(key => questionTypes[key]);
       const questionsPerType = Math.floor(numQuestions / selectedTypes.length);
       const remainder = numQuestions % selectedTypes.length;
-      
+
       const breakdown = {
         multipleChoice: 0,
         fillInBlanks: 0,
@@ -75,8 +119,8 @@ const TestPapersPage = () => {
       selectedTypes.forEach((type, index) => {
         let count = questionsPerType;
         if (index < remainder) count += 1;
-        
-        switch(type) {
+
+        switch (type) {
           case 'multipleChoice':
             breakdown.multipleChoice = count;
             break;
@@ -113,16 +157,16 @@ const TestPapersPage = () => {
 
       // Use the actual API service
       const response = await apiService.generateTestPaper(testSpecification);
-      
+
       console.log('API Response received:', response);
-      
+
       if (response && response.testPaper) {
         // Parse the response and extract questions and answers
         const { questions: generatedQuestions, answers } = parseGeneratedTest(response.testPaper);
-        
+
         setQuestions(generatedQuestions);
         setAnswerKey(answers);
-        
+
         if (generatedQuestions.length === 0) {
           setError('No questions were generated. Please try again with different parameters.');
         } else {
@@ -131,7 +175,7 @@ const TestPapersPage = () => {
       } else {
         throw new Error('Invalid response format from server - missing testPaper field');
       }
-      
+
     } catch (error) {
       console.error('Failed to generate test:', error);
       setError(`Failed to generate test paper: ${error.message}`);
@@ -301,11 +345,11 @@ const TestPapersPage = () => {
 
     const printWindow = window.open('', '_blank');
     const htmlContent = type === 'test' ? generateTestPaperHTML() : generateAnswerKeyHTML();
-    
+
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     printWindow.focus();
-    
+
     setTimeout(() => {
       printWindow.print();
     }, 500);
@@ -721,15 +765,13 @@ const TestPapersPage = () => {
 
         {/* Error Display */}
         {error && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            error.includes('Demo data') 
-              ? 'bg-yellow-50 border border-yellow-200' 
-              : 'bg-red-50 border border-red-200'
-          }`}>
+          <div className={`mb-6 p-4 rounded-lg ${error.includes('Demo data')
+            ? 'bg-yellow-50 border border-yellow-200'
+            : 'bg-red-50 border border-red-200'
+            }`}>
             <div className="flex items-center">
-              <svg className={`w-5 h-5 mr-2 ${
-                error.includes('Demo data') ? 'text-yellow-600' : 'text-red-600'
-              }`} fill="currentColor" viewBox="0 0 20 20">
+              <svg className={`w-5 h-5 mr-2 ${error.includes('Demo data') ? 'text-yellow-600' : 'text-red-600'
+                }`} fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
               <p className={error.includes('Demo data') ? 'text-yellow-700' : 'text-red-700'}>
@@ -746,7 +788,7 @@ const TestPapersPage = () => {
             {/* Test Details Card */}
             <div className="bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
               <h2 className="text-2xl font-semibold text-gray-800 mb-6">Test Details</h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">School Name</label>
@@ -790,6 +832,29 @@ const TestPapersPage = () => {
                       type="number"
                       value={testDetails.duration}
                       onChange={(e) => handleTestDetailsChange('duration', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="e.g., 2"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Marks"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                    <input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       placeholder="e.g., 2"
                     />
@@ -858,11 +923,10 @@ const TestPapersPage = () => {
                     <button
                       key={diff}
                       onClick={() => setDifficulty(diff)}
-                      className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 ${
-                        difficulty === diff
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                      }`}
+                      className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 ${difficulty === diff
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                        }`}
                     >
                       {diff}
                     </button>
@@ -876,7 +940,7 @@ const TestPapersPage = () => {
                 <div className="flex items-center space-x-4">
                   <input
                     type="range"
-                    min="5"
+                    min="10"
                     max="50"
                     value={numQuestions}
                     onChange={(e) => setNumQuestions(parseInt(e.target.value))}
@@ -899,11 +963,10 @@ const TestPapersPage = () => {
                     <button
                       key={key}
                       onClick={() => handleQuestionTypeChange(key)}
-                      className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 ${
-                        questionTypes[key]
-                          ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                      }`}
+                      className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 ${questionTypes[key]
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                        }`}
                     >
                       {label}
                     </button>
@@ -917,11 +980,10 @@ const TestPapersPage = () => {
               <button
                 onClick={generateQuestions}
                 disabled={isGenerating}
-                className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-300 ${
-                  isGenerating
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 transform hover:scale-105'
-                }`}
+                className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-300 ${isGenerating
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 transform hover:scale-105'
+                  }`}
               >
                 {isGenerating ? (
                   <div className="flex items-center justify-center">
@@ -943,8 +1005,11 @@ const TestPapersPage = () => {
             <div className="bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-semibold text-gray-800">Generated Test Paper</h2>
+
                 <div className="flex space-x-3">
                   {answerKey.length > 0 && (
+
+
                     <button
                       onClick={() => exportToPDF('answer')}
                       className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center space-x-2 shadow-md"
@@ -954,17 +1019,45 @@ const TestPapersPage = () => {
                       </svg>
                       <span>Export Answer Key</span>
                     </button>
+
+
                   )}
                   {questions.length > 0 && (
-                    <button
-                      onClick={() => exportToPDF('test')}
-                      className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center space-x-2 shadow-md"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <span>Export Test Paper</span>
-                    </button>
+                    <>
+                      <select
+                        value={selectedClass}
+                        onChange={(e) => setSelectedClass(e.target.value)}
+                        className="px-2 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                      >
+                        <option value="">Select Class</option>
+                        {classes.map(cls => (
+                          <option key={cls.id} value={cls.id}>
+                            {formatClassName(cls)}
+                          </option>
+                        ))}
+                      </select>
+                      {
+
+                        selectedClass && ((<button
+                          onClick={() => sendPaper(selectedClass)}
+                          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 flex items-center space-x-2 shadow-md"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                          </svg>
+                          <span>Send Class Paper</span>
+                        </button>))
+                      }
+                      <button
+                        onClick={() => exportToPDF('test')}
+                        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center space-x-2 shadow-md"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Export Test Paper</span>
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
