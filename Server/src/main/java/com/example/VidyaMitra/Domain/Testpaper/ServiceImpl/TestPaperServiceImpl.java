@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,7 +56,7 @@ public class TestPaperServiceImpl implements TestPaperService {
     public void deactivateExpiredTests() {
 
         repository.findAll().forEach(test -> {
-            if (test.getEndTime().isBefore(LocalDateTime.now())) {
+            if (test.getEndTime().isBefore(LocalTime.now())) {
                 test.setActive(false);
                 repository.save(test);
             }

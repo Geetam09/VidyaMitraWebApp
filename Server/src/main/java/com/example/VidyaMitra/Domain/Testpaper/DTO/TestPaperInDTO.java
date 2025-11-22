@@ -3,6 +3,7 @@ package com.example.VidyaMitra.Domain.Testpaper.DTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 public class TestPaperInDTO {
@@ -10,9 +11,9 @@ public class TestPaperInDTO {
 
     private String subject;
 
-    private LocalDateTime startTime;
+    private LocalTime startTime;
 
-    private LocalDateTime endTime;
+    private LocalTime endTime;
 
     private Long createdByTeacherId;
 

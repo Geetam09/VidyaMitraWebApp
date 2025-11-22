@@ -25,8 +25,8 @@ public class TestPaperMapper {
         dto.setSubject(entity.getSubject());
         dto.setTestLink(entity.getTestLink());
         dto.setActive(entity.isActive());
-        dto.setStartTime(entity.getStartTime() != null ? entity.getStartTime().toString() : null);
-        dto.setEndTime(entity.getEndTime() != null ? entity.getEndTime().toString() : null);
+        dto.setStartTime(entity.getStartTime());
+        dto.setEndTime(entity.getEndTime());
         dto.setCreatedByTeacherId(entity.getCreatedByTeacherId());
         return dto;
     }

@@ -2,6 +2,8 @@ package com.example.VidyaMitra.Domain.Testpaper.DTO;
 
 import lombok.Data;
 
+import java.time.LocalTime;
+
 @Data
 public class TestPaperOutDTO {
     private Long id;
@@ -14,9 +16,9 @@ public class TestPaperOutDTO {
 
     private boolean active;
 
-    private String startTime;
+    private LocalTime startTime;
 
-    private String endTime;
+    private LocalTime endTime;
 
     private Long createdByTeacherId;
 }

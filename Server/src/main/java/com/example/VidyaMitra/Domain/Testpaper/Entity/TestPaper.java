@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Data
@@ -27,9 +28,9 @@ public class TestPaper {
 
         private String subject;
 
-        private LocalDateTime startTime;
+        private LocalTime startTime;
 
-        private LocalDateTime endTime;
+        private LocalTime endTime;
 
         private String testLink; // unique link sent by email
 
