@@ -1,9 +1,6 @@
 package com.example.VidyaMitra.Domain.Testpaper.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +34,11 @@ public class TestPaper {
         private boolean active; // true until endTime
 
         private Long createdByTeacherId; // track which teacher created it
+
+        @Lob
+        private String content;
+
+        private Long classId;
     }
 
 

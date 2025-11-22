@@ -21,4 +21,6 @@ public class TestPaperOutDTO {
     private LocalTime endTime;
 
     private Long createdByTeacherId;
+    private Long classId;
+    private String content;
 }

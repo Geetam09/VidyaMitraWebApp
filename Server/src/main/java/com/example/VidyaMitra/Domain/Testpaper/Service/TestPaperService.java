@@ -10,5 +10,6 @@ public interface TestPaperService {
     TestPaperOutDTO getTest(Long id);
     void deactivateExpiredTests();
     List<TestPaperOutDTO> getAllTests();
+    String sendTestPaperToClass(Long testPaperId, Long classId);
 
 }

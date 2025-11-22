@@ -1,6 +1,8 @@
 package com.example.VidyaMitra.Domain.Testpaper.ServiceImpl;
 
 import com.example.VidyaMitra.Domain.Email.EmailService;
+import com.example.VidyaMitra.Domain.Student.StudentEntity;
+import com.example.VidyaMitra.Domain.Student.StudentRepository;
 import com.example.VidyaMitra.Domain.Testpaper.DTO.TestPaperInDTO;
 import com.example.VidyaMitra.Domain.Testpaper.DTO.TestPaperOutDTO;
 import com.example.VidyaMitra.Domain.Testpaper.Entity.TestPaper;
@@ -10,7 +12,6 @@ import com.example.VidyaMitra.Domain.Testpaper.Service.TestPaperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,40 +19,74 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TestPaperServiceImpl implements TestPaperService {
+
     private final TestPaperRepository repository;
     private final TestPaperMapper mapper;
     private final EmailService emailService;
+    private final StudentRepository studentRepository;
 
-
+    // ✔ CREATE TEST
     @Override
     public TestPaperOutDTO createTest(TestPaperInDTO dto) {
 
-        // Generate unique test link
-        String testLink = "https://vidyamitra.com/test/" + System.currentTimeMillis();
-
-        TestPaper test = mapper.toEntity(dto, testLink);
+        TestPaper test = mapper.toEntity(dto, null);
+        test.setContent(dto.getContent());
         repository.save(test);
 
-        // Here you will send test link to students (loop later)
-        emailService.sendTestLink(
-                "student@example.com",
-                dto.getTitle(),
-                testLink,
-                dto.getStartTime().toString(),
-                dto.getEndTime().toString()
-        );
+        String testLink = "http://localhost:8080/api/test-paper/" + test.getId();
+        test.setTestLink(testLink);
+        repository.save(test);
 
         return mapper.toOutDTO(test);
     }
 
+    // ✔ SEND TEST PAPER TO CLASS
+    @Override
+    public String sendTestPaperToClass(Long classId, Long testPaperId) {
+
+        TestPaper test = repository.findById(testPaperId)
+                .orElseThrow(() -> new RuntimeException("Test Paper not found"));
+
+        List<StudentEntity> students = studentRepository.findBySchoolClass_Id(classId);
+
+        // Safely handle null times
+        String startTime = test.getStartTime() != null
+                ? test.getStartTime().toString()
+                : "Not Applicable";
+
+        String endTime = test.getEndTime() != null
+                ? test.getEndTime().toString()
+                : "Not Applicable";
+
+        for (StudentEntity student : students) {
+
+            String email = student.getParentEmail();
+            if (email == null || email.isEmpty()) continue;
+
+            // Send email
+            emailService.sendTestLink(
+                    email,
+                    test.getTitle(),
+                    test.getTestLink(),
+                    startTime,
+                    endTime
+            );
+        }
+
+        return "Test Paper emailed to all parents in the class!";
+    }
+
+
+
+    // ✔ GET TEST BY ID
     @Override
     public TestPaperOutDTO getTest(Long id) {
         TestPaper test = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Test not found"));
-
         return mapper.toOutDTO(test);
     }
 
+    // ✔ DEACTIVATE EXPIRED TESTS
     @Override
     public void deactivateExpiredTests() {
 
@@ -61,16 +96,14 @@ public class TestPaperServiceImpl implements TestPaperService {
                 repository.save(test);
             }
         });
-
     }
 
+    // ✔ GET ALL TESTS
     @Override
     public List<TestPaperOutDTO> getAllTests() {
-        List<TestPaper> allTests = repository.findAll(); // instance, not class
-        return allTests.stream()
-                .map(mapper::toOutDTO) // instance, not class
+        return repository.findAll()
+                .stream()
+                .map(mapper::toOutDTO)
                 .collect(Collectors.toList());
     }
-
-
 }

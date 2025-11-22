@@ -18,31 +18,38 @@ public class TestPaperController {
         this.testPaperService = testPaperService;
     }
 
-    // CREATE Test Paper
+    // CREATE TEST PAPER
     @PostMapping
     public ResponseEntity<TestPaperOutDTO> createTest(@RequestBody TestPaperInDTO dto) {
-        TestPaperOutDTO createdTest = testPaperService.createTest(dto);
-        return ResponseEntity.ok(createdTest);
+        return ResponseEntity.ok(testPaperService.createTest(dto));
     }
 
-    // GET Test Paper by ID
+    // SEND TO CLASS
+    @PostMapping("/send-to-class/{classId}/{testPaperId}")
+    public ResponseEntity<String> sendTestPaperToClass(@PathVariable Long classId,
+                                                       @PathVariable Long testPaperId)
+
+     {
+        String message = testPaperService.sendTestPaperToClass(classId, testPaperId);
+        return ResponseEntity.ok(message);
+    }
+
+    // GET TEST BY ID
     @GetMapping("/{id}")
     public ResponseEntity<TestPaperOutDTO> getTest(@PathVariable Long id) {
-        TestPaperOutDTO test = testPaperService.getTest(id);
-        return ResponseEntity.ok(test);
+        return ResponseEntity.ok(testPaperService.getTest(id));
     }
 
-    // OPTIONAL: Manually trigger expiry check (if not only scheduler-based)
+    // DEACTIVATE EXPIRED TESTS
     @PostMapping("/deactivate-expired")
     public ResponseEntity<String> deactivateExpiredTests() {
         testPaperService.deactivateExpiredTests();
         return ResponseEntity.ok("Expired tests deactivated successfully.");
     }
-    // GET all tests
+
+    // GET ALL TESTS
     @GetMapping
     public ResponseEntity<List<TestPaperOutDTO>> getAllTests() {
-        List<TestPaperOutDTO> tests = testPaperService.getAllTests();
-        return ResponseEntity.ok(tests);
+        return ResponseEntity.ok(testPaperService.getAllTests());
     }
-
 }

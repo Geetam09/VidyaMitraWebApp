@@ -16,6 +16,8 @@ public class TestPaperMapper {
                 .testLink(testLink)
                 .active(true)
                 .createdByTeacherId(dto.getCreatedByTeacherId())
+                .classId(dto.getClassId())
+                .content(dto.getContent())
                 .build();
     }
     public TestPaperOutDTO toOutDTO(TestPaper entity) {
@@ -28,6 +30,8 @@ public class TestPaperMapper {
         dto.setStartTime(entity.getStartTime());
         dto.setEndTime(entity.getEndTime());
         dto.setCreatedByTeacherId(entity.getCreatedByTeacherId());
+        dto.setClassId(entity.getClassId());
+        dto.setContent(entity.getContent());
         return dto;
     }
 

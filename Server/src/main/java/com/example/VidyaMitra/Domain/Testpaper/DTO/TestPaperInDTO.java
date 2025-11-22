@@ -18,4 +18,5 @@ public class TestPaperInDTO {
     private Long createdByTeacherId;
 
     private Long classId;
+    private String content;
 }
