@@ -33,7 +33,7 @@ public class TestPaperServiceImpl implements TestPaperService {
         test.setContent(dto.getContent());
         repository.save(test);
 
-        String testLink = "http://localhost:8080/api/test-paper/" + test.getId();
+        String testLink = "http://localhost:5173/test/" + test.getId();
         test.setTestLink(testLink);
         repository.save(test);
 

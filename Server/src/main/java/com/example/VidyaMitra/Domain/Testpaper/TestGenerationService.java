@@ -1,12 +1,7 @@
 package com.example.VidyaMitra.Domain.Testpaper;
 
-
-import org.springframework.stereotype.Service;
-
-import java.util.Map;
-
-
 import org.springframework.http.*;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -38,41 +33,45 @@ public class TestGenerationService {
 
     public String generateTestPaper(TestSpecification spec) {
         try {
-            // Build the full prompt
+            // Handle null breakdown safely
+            TestSpecification.Breakdown breakdown = spec.breakdown() != null
+                    ? spec.breakdown()
+                    : new TestSpecification.Breakdown(0, 0, 0, 0);
+
+            // Build the final prompt
             String finalPrompt = String.format(
                     promptTemplateString,
                     spec.subject(),
                     spec.topic(),
                     spec.difficulty(),
                     spec.totalQuestions(),
-                    spec.breakdown().multipleChoice(),
-                    spec.breakdown().fillInBlanks(),
-                    spec.breakdown().shortAnswer(),
-                    spec.breakdown().longAnswer()
+                    breakdown.multipleChoice(),
+                    breakdown.fillInBlanks(),
+                    breakdown.shortAnswer(),
+                    breakdown.longAnswer()
             );
 
-            // Headers
+            // Set HTTP headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(API_KEY);
             headers.set("HTTP-Referer", "https://vidyamitra.ai");
             headers.set("X-Title", "VidyaMitra Test Generator");
 
-            // Body
+            // Build request body
             Map<String, Object> body = new HashMap<>();
             body.put("model", "meta-llama/llama-3.3-70b-instruct:free");
-
             List<Map<String, String>> messages = List.of(
                     Map.of("role", "user", "content", finalPrompt)
             );
             body.put("messages", messages);
 
-            // Send request
+            // Send request to OpenRouter
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<Map> response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, Map.class);
 
-            // Extract content
+            // Extract response content
             Map responseBody = response.getBody();
             if (responseBody != null && responseBody.containsKey("choices")) {
                 List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
@@ -81,6 +80,7 @@ public class TestGenerationService {
                     return (String) messageObj.get("content");
                 }
             }
+
             return "No response received from the model.";
 
         } catch (Exception e) {
@@ -89,4 +89,3 @@ public class TestGenerationService {
         }
     }
 }
-

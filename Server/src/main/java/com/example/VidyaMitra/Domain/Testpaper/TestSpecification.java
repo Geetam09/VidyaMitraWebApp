@@ -14,3 +14,4 @@ public record TestSpecification(
             int longAnswer
     ) {}
 }
+
