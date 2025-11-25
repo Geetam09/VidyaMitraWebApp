@@ -9,5 +9,5 @@ import lombok.*;
 public class PostLikeOutDto {
     private Long id;
     private Long postId;
-    private Long TeacherId;
+    private Long teacherId;
 }
