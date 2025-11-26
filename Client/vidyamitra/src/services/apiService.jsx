@@ -58,7 +58,7 @@ export const apiService = {
     if (!response.ok) throw new Error('Failed to fetch teacher profile');
     return await response.json();
   },
-   // ================= ASSIGNMENTS =================
+  // ================= ASSIGNMENTS =================
   createAssignment: async (assignmentData, token) => {
     const response = await fetch(`${API_BASE_URL}/api/assignments/create`, {
       method: 'POST',
@@ -164,7 +164,7 @@ export const apiService = {
     return response.json();
   },
 
-    // ================= ASSIGNMENT SUBMISSIONS =================
+  // ================= ASSIGNMENT SUBMISSIONS =================
   submitAssignment: async (submissionData, token) => {
     const response = await fetch(`${API_BASE_URL}/api/submissions/submit`, {
       method: 'POST',
@@ -482,7 +482,7 @@ export const apiService = {
     return response.json();
   },
 
-  sendTestPaper: async (testPaperData, token) => {
+  saveTestPaper: async (testPaperData, token) => {
     const response = await fetch(`${API_BASE_URL}/api/test-paper`, {
       method: 'POST',
       headers: {
@@ -501,31 +501,62 @@ export const apiService = {
     return response.json();
   },
 
-    // ================= COMMUNITY POSTS =================
+  getTestPapers: async (token) => {
+    const response = await fetch(`${API_BASE_URL}/api/test-paper`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Failed to fetch test papers: ${response.status} ${response.statusText} - ${errorData}`);
+    }
+    return response.json();
+  },
+
+  sendTestPaperToClass: async (paperId, classId, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/test-paper/send-to-class/${classId}/${paperId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+     
+    });
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Failed to send test paper to class: ${response.status} ${response.statusText} - ${errorData}`);
+    }
+    return response;
+  },
+
+  // ================= COMMUNITY POSTS =================
   createPost: async (postData, token) => {
-  const formData = new FormData();
-  formData.append('authorId', postData.authorId); // Append authorId
-  formData.append('content', postData.content); // Append content
-  if (postData.image) {
-    formData.append('image', postData.image); // Append image if it exists
-  }
+    const formData = new FormData();
+    formData.append('authorId', postData.authorId); // Append authorId
+    formData.append('content', postData.content); // Append content
+    if (postData.image) {
+      formData.append('image', postData.image); // Append image if it exists
+    }
 
-  const response = await fetch(`${API_BASE_URL}/community-posts/createPost`, {
-    method: 'POST',
-    headers: {
-      ...(token && { Authorization: `Bearer ${token}` }), // Include token if available
-    },
-    body: formData, // Send form data
-  });
+    const response = await fetch(`${API_BASE_URL}/community-posts/createPost`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }), // Include token if available
+      },
+      body: formData, // Send form data
+    });
 
-  if (!response.ok) {
-    const errorData = await response.text();
-    throw new Error(
-      `Failed to create post: ${response.status} ${response.statusText} - ${errorData}`
-    );
-  }
-  return response.json();
-},
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(
+        `Failed to create post: ${response.status} ${response.statusText} - ${errorData}`
+      );
+    }
+    return response.json();
+  },
 
   getAllPosts: async (token) => {
     const response = await fetch(`${API_BASE_URL}/community-posts/getAllPosts`, {
@@ -562,7 +593,7 @@ export const apiService = {
     return true;
   },
 
-  
+
   // ================= POST COMMENTS =================
   addComment: async (commentData, token) => {
     const response = await fetch(`${API_BASE_URL}/comments/add`, {
@@ -604,7 +635,7 @@ export const apiService = {
     if (!response.ok) throw new Error('Failed to delete comment');
     return true;
   },
-    // ================= POST LIKES =================
+  // ================= POST LIKES =================
   likePost: async (likeData, token) => {
     validateToken(token);
     const response = await fetch(`${API_BASE_URL}/api/postLike/addLikes`, {

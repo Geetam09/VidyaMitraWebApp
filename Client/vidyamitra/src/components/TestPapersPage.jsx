@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import FloatingChatbot from "./FloatingChatbot";
 import { apiService } from "../services/apiService";
+import { useNavigate } from 'react-router-dom';
 
 const TestPapersPage = () => {
   const [selectedClass, setSelectedClass] = useState('');
-
+  const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
   const [subject, setSubject] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -26,7 +27,7 @@ const TestPapersPage = () => {
 
   const token = localStorage.getItem('token');
 
-  const formatClassName = (cls) => {
+ const formatClassName = (cls) => {
     return `${cls.grade} ${cls.section}`;
   };
 
@@ -64,10 +65,30 @@ const TestPapersPage = () => {
     }
   };
 
+  const savetestPaper = async () => {
+    try {
+      const response = await apiService.saveTestPaper({
+        title: testDetails.examType,
+        description: `Test paper for ${subject} on ${topic}`,
+        content: questions.map((q, index) => (`Q${index + 1}: ${q.question}\n${q.options ? q.options.join('\n') : ''}\n`)).join('\n'),
+        duration: testDetails.duration,
+        expiryDate: testDetails.date,
+        subject: subject,
+        createdByTeacherId: localStorage.getItem('teacherId'),
+        startTime: startTime,
+        endTime: endTime
+
+      }, token);
+    } catch (error) {
+      console.error('Error saving test paper:', error);
+      alert('Failed to save test paper');
+    }
+  }
+
 
   const sendPaper = async (classId) => {
     try {
-      const response = await apiService.sendTestPaper( {
+      const response = await apiService.sendTestPaper({
         classId,
         startTime,
         endTime,
@@ -757,9 +778,23 @@ const TestPapersPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
       <div className="max-w-7xl mx-auto">
+
+         <button
+            onClick={() => { navigate('/test-papers-list'); }}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center space-x-2 shadow-md"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Test Papers</span>
+          </button>
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">Test Generator</h1>
+
+         
+
           <p className="text-xl text-gray-600">Create customized test papers from your syllabus</p>
         </div>
 
@@ -1048,6 +1083,17 @@ const TestPapersPage = () => {
                           <span>Send Class Paper</span>
                         </button>))
                       }
+
+                      <button
+                        onClick={() => savetestPaper()}
+                        className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center space-x-2 shadow-md"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Save Test Paper</span>
+                      </button>
+
                       <button
                         onClick={() => exportToPDF('test')}
                         className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center space-x-2 shadow-md"

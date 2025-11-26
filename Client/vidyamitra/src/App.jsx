@@ -18,6 +18,7 @@ import SidebarLayout from "./components/SidebarLayout";
 import VidhyaMitraLanding from "./components/VidhyaMitraLanding";
 import Dashboard from "./components/Dashboard"; // Use Dashboard instead of DashboardPage
 import './App.css';
+import TestPapersList from "./components/TestPapersList";
 
 // Wrapper to persist login and redirect
 const ProtectedRoute = ({ token, teacherId, children }) => {
@@ -57,6 +58,7 @@ const App = () => {
           <Route path="/students" element={<StudentsPage />} />
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/test-papers" element={<TestPapersPage />} />
+          <Route path="/test-papers-list" element={<TestPapersList />} />
           <Route path="/assignments" element={<AssignmentsPage />} />
           <Route path="/timetable" element={<TimetablePage />} />
           <Route path="/resources" element={<ResourceLibraryPage />} />
